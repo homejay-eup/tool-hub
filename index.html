@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EUP 工具入口</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+  :root {
+    --teal-dark:  #00796B;
+    --teal:       #009688;
+    --teal-mid:   #26A69A;
+    --teal-light: #4DB6AC;
+    --teal-pale:  #E0F2F1;
+    --blue:       #1565C0;
+    --blue-mid:   #1E88E5;
+    --grad: linear-gradient(135deg, #4DB6AC 0%, #26A69A 38%, #1E88E5 100%);
+
+    --gray-50:  #F5F7FA;
+    --gray-100: #EEF0F4;
+    --gray-200: #DDE1E9;
+    --gray-300: #C5CBD8;
+    --gray-400: #9AA3B2;
+    --gray-500: #6B7384;
+    --gray-600: #4A5264;
+    --gray-700: #343A4D;
+    --gray-800: #1F2535;
+    --gray-900: #111827;
+
+    --white: #FFFFFF;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,.07), 0 2px 8px rgba(0,0,0,.05);
+    --shadow:    0 2px 6px rgba(0,0,0,.08), 0 6px 20px rgba(0,0,0,.07);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.06);
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", "PingFang TC", sans-serif;
+    background: var(--gray-50);
+    color: var(--gray-800);
+    min-height: 100vh;
+  }
+
+  /* ══════════════════════════════════════
+     LOGIN SCREEN
+  ══════════════════════════════════════ */
+  #login-screen {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* Left gradient panel */
+  .login-left {
+    flex: 1;
+    background: var(--grad);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  .login-left::before {
+    content: "";
+    position: absolute;
+    width: 420px; height: 420px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.08);
+    top: -140px; right: -100px;
+  }
+  .login-left::after {
+    content: "";
+    position: absolute;
+    width: 260px; height: 260px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.06);
+    bottom: -80px; left: -60px;
+  }
+  .login-brand {
+    position: relative; z-index: 1;
+    text-align: center; color: white;
+  }
+  .login-brand-icon {
+    width: 72px; height: 72px;
+    background: rgba(255,255,255,.2);
+    border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 24px;
+    backdrop-filter: blur(8px);
+  }
+  .login-brand-icon svg { width: 36px; height: 36px; color: white; }
+  .login-brand-title {
+    font-size: 28px; font-weight: 700;
+    letter-spacing: 1px; margin-bottom: 10px;
+  }
+  .login-brand-sub {
+    font-size: 15px; letter-spacing: 6px;
+    opacity: .8; margin-bottom: 28px;
+  }
+  .login-brand-desc {
+    font-size: 13px; opacity: .65;
+    background: rgba(255,255,255,.12);
+    padding: 10px 22px; border-radius: 20px;
+    letter-spacing: .5px;
+  }
+
+  /* Right white panel */
+  .login-right {
+    width: 420px;
+    flex-shrink: 0;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 56px 48px;
+    position: relative;
+  }
+  .login-logo {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 36px;
+  }
+  .login-logo-icon {
+    width: 38px; height: 38px;
+    background: var(--grad);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .login-logo-icon svg { width: 20px; height: 20px; color: white; }
+  .login-logo-name { font-size: 20px; font-weight: 700; color: var(--teal-dark); letter-spacing: .5px; }
+
+  .login-welcome {
+    font-size: 26px; font-weight: 700;
+    color: var(--gray-900); margin-bottom: 10px; text-align: center;
+  }
+  .login-hint {
+    font-size: 13px; color: var(--gray-400);
+    text-align: center; line-height: 1.6; margin-bottom: 32px;
+  }
+  .login-hint strong { color: var(--gray-600); }
+
+  .g-signin-wrap { margin-bottom: 20px; }
+
+  .login-error {
+    display: none;
+    font-size: 13px; color: #D32F2F;
+    background: #FFEBEE;
+    padding: 10px 16px; border-radius: 8px;
+    text-align: center; margin-top: 12px;
+    width: 100%;
+  }
+
+  .login-footer {
+    position: absolute; bottom: 24px;
+    font-size: 11px; color: var(--gray-300);
+    letter-spacing: .3px;
+  }
+
+  @media (max-width: 720px) {
+    #login-screen { flex-direction: column; }
+    .login-left { min-height: 220px; flex: none; padding: 32px 24px; }
+    .login-right { width: 100%; flex: 1; padding: 40px 28px; }
+    .login-brand-title { font-size: 22px; }
+  }
+
+  /* ══════════════════════════════════════
+     MAIN APP  (hidden until logged in)
+  ══════════════════════════════════════ */
+  #app { display: none; }
+
+  /* ── Header ── */
+  header {
+    background: var(--white);
+    border-bottom: 1px solid var(--gray-200);
+    height: 62px; padding: 0 28px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 200;
+    box-shadow: 0 1px 0 var(--gray-200), 0 2px 8px rgba(0,0,0,.04);
+  }
+  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .logo-icon {
+    width: 34px; height: 34px;
+    background: var(--grad); border-radius: 9px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .logo-icon svg { width: 18px; height: 18px; color: white; }
+  .logo-text { display: flex; flex-direction: column; line-height: 1.2; }
+  .logo-name { font-size: 15px; font-weight: 700; color: var(--teal-dark); letter-spacing: .5px; }
+  .logo-sub  { font-size: 11px; color: var(--gray-400); letter-spacing: .3px; }
+
+  .header-right { display: flex; align-items: center; gap: 10px; }
+
+  /* User avatar */
+  .user-chip {
+    display: flex; align-items: center; gap: 8px;
+    padding: 4px 12px 4px 4px;
+    border-radius: 20px; border: 1px solid var(--gray-200);
+    background: white; cursor: default;
+  }
+  .user-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    object-fit: cover; flex-shrink: 0;
+  }
+  .user-avatar-fallback {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--grad); color: white;
+    font-size: 12px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .user-name { font-size: 13px; color: var(--gray-600); font-weight: 500; }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 15px; border-radius: 8px;
+    font-size: 13px; font-weight: 500;
+    cursor: pointer; border: none; transition: all .18s;
+    white-space: nowrap; font-family: inherit;
+  }
+  .btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+  .btn-primary {
+    background: var(--grad); color: white;
+    box-shadow: 0 2px 8px rgba(0,150,136,.35);
+  }
+  .btn-primary:hover { filter: brightness(1.08); box-shadow: 0 4px 14px rgba(0,150,136,.45); transform: translateY(-1px); }
+  .btn-outline {
+    background: white; color: var(--gray-600);
+    border: 1px solid var(--gray-200); box-shadow: var(--shadow-sm);
+  }
+  .btn-outline:hover { border-color: var(--teal-light); color: var(--teal); background: var(--teal-pale); }
+  .btn-ghost { background: transparent; color: var(--gray-400); padding: 6px 9px; }
+  .btn-ghost:hover { background: var(--gray-100); color: var(--gray-600); }
+  .btn-danger { background: #EF5350; color: white; }
+  .btn-danger:hover { background: #D32F2F; }
+
+  /* ── Hero ── */
+  .hero {
+    background: var(--grad); padding: 28px 28px 72px;
+    position: relative; overflow: hidden;
+  }
+  .hero::before { content:""; position:absolute; width:320px; height:320px; border-radius:50%; background:rgba(255,255,255,.08); top:-100px; right:-60px; pointer-events:none; }
+  .hero::after  { content:""; position:absolute; width:200px; height:200px; border-radius:50%; background:rgba(255,255,255,.06); bottom:-80px; left:40%; pointer-events:none; }
+  .hero-inner { position:relative; z-index:1; }
+  .hero-title { font-size:22px; font-weight:700; color:white; letter-spacing:.5px; margin-bottom:6px; }
+  .hero-sub   { font-size:13px; color:rgba(255,255,255,.75); letter-spacing:.3px; }
+
+  /* ── Search ── */
+  .search-float { padding: 0 28px; margin-top: -38px; position: relative; z-index: 10; }
+  .search-box {
+    display: flex; align-items: center; gap: 10px;
+    background: white; border: 1px solid var(--gray-200);
+    border-radius: 12px; padding: 11px 16px;
+    box-shadow: var(--shadow-lg); max-width: 560px;
+  }
+  .search-box svg { color: var(--gray-300); flex-shrink:0; width:17px; height:17px; }
+  .search-box input {
+    border:none; outline:none; flex:1;
+    font-size:14px; color:var(--gray-800);
+    background:transparent; font-family:inherit;
+  }
+  .search-box input::placeholder { color:var(--gray-300); }
+
+  /* ── Tabs ── */
+  .tabs-wrap {
+    padding: 20px 28px 0;
+    display: flex; align-items: center; gap: 6px;
+    overflow-x: auto; scrollbar-width: none;
+  }
+  .tabs-wrap::-webkit-scrollbar { display: none; }
+  .tab {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 16px; border-radius: 20px;
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    white-space: nowrap; border: 1px solid var(--gray-200);
+    color: var(--gray-500); background: white; transition: all .15s; font-family: inherit;
+  }
+  .tab:hover { border-color: var(--teal-light); color: var(--teal); }
+  .tab.active { background: var(--teal); color: white; border-color: var(--teal); box-shadow: 0 2px 8px rgba(0,150,136,.3); }
+  .tab .badge { font-size: 11px; padding: 1px 7px; border-radius: 10px; background: rgba(255,255,255,.2); color: inherit; }
+  .tab:not(.active) .badge { background: var(--gray-100); }
+  .tab-add {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 7px 14px; border-radius: 20px; font-size: 13px;
+    cursor: pointer; border: 1px dashed var(--gray-300);
+    color: var(--gray-400); background: transparent;
+    transition: all .15s; white-space: nowrap; font-family: inherit;
+  }
+  .tab-add:hover { border-color: var(--teal); color: var(--teal); }
+
+  /* ── Grid ── */
+  .section-header {
+    padding: 20px 28px 12px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .section-count { font-size: 13px; color: var(--gray-400); }
+  .grid-wrap { padding: 0 28px 48px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; }
+
+  /* ── Card ── */
+  .card {
+    background: white; border-radius: var(--radius);
+    border: 1px solid var(--gray-200); box-shadow: var(--shadow-sm);
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: box-shadow .2s, transform .2s, border-color .2s; position: relative;
+  }
+  .card::before {
+    content:""; position:absolute; top:0; left:0; right:0; height:3px;
+    background:var(--grad); opacity:0; transition:opacity .2s;
+  }
+  .card:hover { box-shadow: var(--shadow-lg); transform: translateY(-3px); border-color: var(--teal-light); }
+  .card:hover::before { opacity: 1; }
+  .card-link {
+    text-decoration: none; color: inherit; flex: 1;
+    display: flex; flex-direction: column; padding: 20px 20px 16px;
+  }
+  .card-icon {
+    width: 46px; height: 46px; border-radius: 12px;
+    background: var(--teal-pale); display: flex; align-items: center;
+    justify-content: center; font-size: 22px; margin-bottom: 14px;
+    flex-shrink: 0; transition: transform .2s;
+  }
+  .card:hover .card-icon { transform: scale(1.08); }
+  .card-title { font-size: 15px; font-weight: 600; color: var(--gray-800); margin-bottom: 6px; line-height: 1.35; }
+  .card-desc  { font-size: 12px; color: var(--gray-400); line-height: 1.6; flex: 1; }
+  .card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; }
+  .card-cat { font-size: 11px; font-weight: 500; color: var(--teal); background: var(--teal-pale); padding: 3px 9px; border-radius: 10px; }
+  .card-arrow {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--gray-100); display: flex; align-items: center;
+    justify-content: center; color: var(--gray-400); transition: all .2s;
+  }
+  .card:hover .card-arrow { background: var(--teal); color: white; }
+  .card-arrow svg { width: 11px; height: 11px; }
+  .card-actions {
+    display: flex; gap: 4px; padding: 8px 14px;
+    border-top: 1px solid var(--gray-100);
+    opacity: 0; transition: opacity .15s;
+  }
+  .card:hover .card-actions { opacity: 1; }
+  .card-actions .btn-ghost { padding: 4px 9px; font-size: 12px; border-radius: 6px; }
+
+  /* ── Empty ── */
+  .empty { grid-column: 1/-1; text-align: center; padding: 64px 20px; color: var(--gray-300); }
+  .empty svg { width: 52px; height: 52px; margin-bottom: 14px; }
+  .empty h3 { font-size: 15px; font-weight: 600; color: var(--gray-400); margin-bottom: 6px; }
+  .empty p { font-size: 13px; }
+
+  /* ── Modal ── */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(15,20,35,.45);
+    backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px;
+    opacity: 0; pointer-events: none; transition: opacity .2s;
+  }
+  .overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: white; border-radius: 18px; padding: 30px;
+    width: 100%; max-width: 490px;
+    box-shadow: 0 24px 64px rgba(0,0,0,.2), 0 4px 16px rgba(0,0,0,.08);
+    transform: translateY(20px) scale(.97); transition: transform .22s;
+  }
+  .overlay.open .modal { transform: translateY(0) scale(1); }
+  .modal-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 22px; }
+  .modal-title { font-size: 18px; font-weight: 700; color: var(--gray-900); }
+  .modal-close {
+    width: 28px; height: 28px; border-radius: 7px; border: none;
+    background: var(--gray-100); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--gray-400); transition: all .15s; flex-shrink: 0;
+  }
+  .modal-close:hover { background: var(--gray-200); color: var(--gray-700); }
+  .modal-close svg { width: 14px; height: 14px; }
+  .modal-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px; }
+
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 12px; font-weight: 600; color: var(--gray-500); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .6px; }
+  .field input, .field textarea, .field select {
+    width: 100%; padding: 10px 13px; border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-sm); font-size: 14px; color: var(--gray-800);
+    outline: none; transition: border .15s; background: white; font-family: inherit;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus {
+    border-color: var(--teal); box-shadow: 0 0 0 3px rgba(0,150,136,.1);
+  }
+  .field textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
+
+  .icon-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .icon-opt {
+    width: 38px; height: 38px; border-radius: 9px;
+    border: 1.5px solid var(--gray-200); font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .12s; background: white;
+  }
+  .icon-opt:hover { border-color: var(--teal-light); background: var(--teal-pale); }
+  .icon-opt.selected { border-color: var(--teal); background: var(--teal-pale); box-shadow: 0 0 0 2px rgba(0,150,136,.25); }
+
+  .json-area {
+    width: 100%; height: 190px; font-family: "Consolas","Monaco",monospace;
+    font-size: 12px; line-height: 1.6; padding: 10px 12px;
+    border: 1.5px solid var(--gray-200); border-radius: var(--radius-sm);
+    outline: none; resize: vertical; color: var(--gray-700);
+  }
+  .json-area:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(0,150,136,.1); }
+
+  .cat-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .cat-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 9px 14px; border-radius: var(--radius-sm);
+    border: 1px solid var(--gray-200); background: var(--gray-50);
+  }
+  .cat-item span { font-size: 14px; color: var(--gray-700); }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed; bottom: 28px; left: 50%;
+    transform: translateX(-50%) translateY(12px);
+    background: var(--gray-900); color: white;
+    padding: 10px 22px; border-radius: 10px; font-size: 13px;
+    z-index: 2000; opacity: 0; pointer-events: none;
+    transition: all .25s; box-shadow: 0 4px 16px rgba(0,0,0,.25);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  footer {
+    text-align: center; padding: 0 0 28px;
+    font-size: 12px; color: var(--gray-300); letter-spacing: .3px;
+  }
+
+  @media (max-width: 600px) {
+    header, .hero, .search-float, .tabs-wrap, .section-header, .grid-wrap { padding-left: 16px; padding-right: 16px; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     LOGIN SCREEN
+════════════════════════════════════════ -->
+<div id="login-screen">
+  <!-- Left gradient panel -->
+  <div class="login-left">
+    <div class="login-brand">
+      <div class="login-brand-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+      </div>
+      <div class="login-brand-title">工具入口</div>
+      <div class="login-brand-sub">T O O L &nbsp; H U B</div>
+      <div class="login-brand-desc">集中管理 · 一鍵開啟</div>
+    </div>
+  </div>
+
+  <!-- Right white panel -->
+  <div class="login-right">
+    <div class="login-logo">
+      <div class="login-logo-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+      </div>
+      <span class="login-logo-name">EUP</span>
+    </div>
+
+    <div class="login-welcome">歡迎回來</div>
+    <p class="login-hint">
+      請使用公司 Google 帳號<br>
+      <strong>（@eup.com.tw）</strong>登入系統
+    </p>
+
+    <div class="g-signin-wrap">
+      <div id="g_id_onload"
+           data-client_id="49182385706-hk1m4hqvlb224df35bbast88kk1baphq.apps.googleusercontent.com"
+           data-callback="handleCredentialResponse"
+           data-auto_select="false">
+      </div>
+      <div class="g_id_signin"
+           data-type="standard"
+           data-size="large"
+           data-theme="outline"
+           data-text="signin_with"
+           data-shape="rectangular"
+           data-logo_alignment="left"
+           data-width="280">
+      </div>
+    </div>
+
+    <div class="login-error" id="login-error">
+      ❌ 僅限 @eup.com.tw 帳號存取
+    </div>
+
+    <div class="login-footer">工具入口 · 內部系統</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MAIN APP
+════════════════════════════════════════ -->
+<div id="app">
+
+  <!-- Header -->
+  <header>
+    <a class="logo" href="#">
+      <div class="logo-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+      </div>
+      <div class="logo-text">
+        <span class="logo-name">EUP</span>
+        <span class="logo-sub">工具入口</span>
+      </div>
+    </a>
+    <div class="header-right">
+      <button class="btn btn-outline" id="btnExport">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        匯出
+      </button>
+      <button class="btn btn-outline" id="btnImport">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        匯入
+      </button>
+      <button class="btn btn-primary" id="btnAdd">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        新增工具
+      </button>
+      <!-- User chip (populated after login) -->
+      <div class="user-chip" id="userChip">
+        <div class="user-avatar-fallback" id="userAvatarFallback"></div>
+        <span class="user-name" id="userName"></span>
+      </div>
+      <button class="btn btn-ghost" id="btnLogout" title="登出">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        登出
+      </button>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="hero-title">工具入口</div>
+      <div class="hero-sub">集中管理所有 AI 工具連結 · 一鍵開啟，不再找連結</div>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="search-float">
+    <div class="search-box">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" placeholder="搜尋工具名稱或描述…">
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs-wrap" id="tabsWrap"></div>
+
+  <!-- Section header -->
+  <div class="section-header">
+    <span class="section-count" id="sectionCount"></span>
+  </div>
+
+  <!-- Grid -->
+  <div class="grid-wrap">
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <footer>EUP 工具入口 · 內部系統</footer>
+</div>
+
+<!-- ── Modals ── -->
+<div class="overlay" id="modalTool">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="modalToolTitle">新增工具</div>
+      <button class="modal-close" id="btnToolClose"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="field"><label>工具名稱</label><input type="text" id="fName" placeholder="例：資料分析工具"></div>
+    <div class="field"><label>網址</label><input type="url" id="fUrl" placeholder="https://…"></div>
+    <div class="field"><label>描述（選填）</label><textarea id="fDesc" placeholder="這個工具的用途說明…"></textarea></div>
+    <div class="field"><label>分類</label><select id="fCat"></select></div>
+    <div class="field"><label>圖示</label><div class="icon-grid" id="iconPicker"></div></div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" id="btnToolCancel">取消</button>
+      <button class="btn btn-primary" id="btnToolSave">儲存</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="modalExport">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">匯出設定</div>
+      <button class="modal-close" onclick="closeModal('modalExport')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <p style="font-size:13px;color:var(--gray-400);margin-bottom:12px;line-height:1.6">複製下方 JSON 傳給同仁，貼入「匯入」視窗即可同步工具清單。</p>
+    <textarea class="json-area" id="exportArea" readonly></textarea>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('modalExport')">關閉</button>
+      <button class="btn btn-primary" id="btnCopyJson">複製 JSON</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="modalImport">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">匯入設定</div>
+      <button class="modal-close" onclick="closeModal('modalImport')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <p style="font-size:13px;color:var(--gray-400);margin-bottom:6px;line-height:1.6">貼上 JSON 後點「匯入」。</p>
+    <p style="font-size:12px;color:#EF5350;margin-bottom:12px">⚠ 將取代目前所有工具設定</p>
+    <textarea class="json-area" id="importArea" placeholder="貼上 JSON 於此…"></textarea>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('modalImport')">取消</button>
+      <button class="btn btn-danger" id="btnImportConfirm">匯入</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="modalCat">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">管理分類</div>
+      <button class="modal-close" onclick="closeModal('modalCat')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="cat-list" id="catList"></div>
+    <div class="field" style="margin-bottom:0">
+      <label>新增分類名稱</label>
+      <input type="text" id="fCatName" placeholder="例：行銷工具">
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('modalCat')">關閉</button>
+      <button class="btn btn-primary" id="btnCatAdd">新增</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const ALLOWED_DOMAIN = 'eup.com.tw';
+const CLIENT_ID = '49182385706-hk1m4hqvlb224df35bbast88kk1baphq.apps.googleusercontent.com';
+
+// ─── Auth ────────────────────────────────────────────────────────
+function parseJwt(token) {
+  const base64 = token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
+  return JSON.parse(decodeURIComponent(atob(base64).split('').map(c =>
+    '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+  ).join('')));
+}
+
+function handleCredentialResponse(response) {
+  const payload = parseJwt(response.credential);
+  const email = payload.email || '';
+
+  if (!email.endsWith('@' + ALLOWED_DOMAIN)) {
+    document.getElementById('login-error').style.display = 'block';
+    return;
+  }
+
+  // Save session
+  sessionStorage.setItem('eup_user', JSON.stringify({
+    email, name: payload.name, picture: payload.picture
+  }));
+
+  showApp(payload);
+}
+
+function showApp(user) {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+
+  // Populate user chip
+  document.getElementById('userName').textContent = user.name || user.email.split('@')[0];
+  const fallback = document.getElementById('userAvatarFallback');
+  if (user.picture) {
+    const img = document.createElement('img');
+    img.src = user.picture;
+    img.className = 'user-avatar';
+    img.alt = user.name;
+    img.onerror = () => { img.replaceWith(fallback); fallback.textContent = (user.name||'U')[0].toUpperCase(); };
+    fallback.parentNode.insertBefore(img, fallback);
+    fallback.remove();
+  } else {
+    fallback.textContent = (user.name||'U')[0].toUpperCase();
+  }
+
+  render();
+}
+
+function logout() {
+  sessionStorage.removeItem('eup_user');
+  // Revoke Google session
+  if (window.google && google.accounts && google.accounts.id) {
+    google.accounts.id.disableAutoSelect();
+  }
+  location.reload();
+}
+
+// Check existing session on load
+window.addEventListener('load', () => {
+  const saved = sessionStorage.getItem('eup_user');
+  if (saved) {
+    try { showApp(JSON.parse(saved)); return; } catch(e) {}
+  }
+  // Init Google Sign-In (fallback if g_id_onload doesn't fire)
+  if (window.google && google.accounts) {
+    google.accounts.id.initialize({ client_id: CLIENT_ID, callback: handleCredentialResponse });
+    google.accounts.id.renderButton(document.querySelector('.g_id_signin'), {
+      type: 'standard', size: 'large', theme: 'outline',
+      text: 'signin_with', shape: 'rectangular', logo_alignment: 'left', width: 280
+    });
+  }
+});
+
+document.getElementById('btnLogout').addEventListener('click', logout);
+
+// ─── Data ────────────────────────────────────────────────────────
+const ICONS = ["🔧","📄","📊","📝","🖼️","📋","📈","🗂️","🔍","⚙️","🚀","💡","🎯","📌","🔐","📧","🌐","🖥️","📱","🗃️","✅","📤","📥","🔗","🧮","📆","💬","🧩","📂","🖨️","🔔","📣"];
+const DEFAULT = {
+  categories: ["全部","文件處理","資料分析","行政作業","其他"],
+  tools: [
+    {id:1,name:"PDF 合併工具",  url:"https://example.com/pdf-merge",     desc:"快速合併多份 PDF 文件",         category:"文件處理",icon:"📄"},
+    {id:2,name:"Excel 資料清洗",url:"https://example.com/excel-clean",   desc:"自動整理與清洗 Excel 資料",     category:"資料分析",icon:"📊"},
+    {id:3,name:"會議記錄產生器",url:"https://example.com/meeting-notes", desc:"輸入重點自動產生正式會議記錄", category:"行政作業",icon:"📝"},
+    {id:4,name:"圖片壓縮工具",  url:"https://example.com/img-compress",  desc:"批次壓縮圖片，降低檔案大小",   category:"文件處理",icon:"🖼️"},
+    {id:5,name:"表單產生器",    url:"https://example.com/form-builder",  desc:"快速建立線上問卷與表單",       category:"行政作業",icon:"📋"},
+    {id:6,name:"資料視覺化",    url:"https://example.com/chart",         desc:"上傳資料自動產生圖表",         category:"資料分析",icon:"📈"},
+  ]
+};
+
+let data = loadData();
+let activeCategory = "全部";
+let searchQuery = "";
+let editingId = null;
+let selectedIcon = "🔧";
+
+function loadData() {
+  try { const r = localStorage.getItem("eup_toolhub"); if(r) return JSON.parse(r); } catch(e){}
+  return JSON.parse(JSON.stringify(DEFAULT));
+}
+function saveData() { localStorage.setItem("eup_toolhub", JSON.stringify(data)); }
+function nextId() { return data.tools.length ? Math.max(...data.tools.map(t=>t.id))+1 : 1; }
+function esc(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
+
+// ─── Render ──────────────────────────────────────────────────────
+function render() { renderTabs(); renderGrid(); }
+
+function renderTabs() {
+  const cats = ["全部",...data.categories.filter(c=>c!=="全部")];
+  document.getElementById("tabsWrap").innerHTML =
+    cats.map(c=>{
+      const n = c==="全部" ? data.tools.length : data.tools.filter(t=>t.category===c).length;
+      return `<button class="tab ${c===activeCategory?"active":""}" onclick="setCategory('${esc(c)}')">${esc(c)}<span class="badge">${n}</span></button>`;
+    }).join("") +
+    `<button class="tab-add" onclick="openCatModal()">＋ 新增分類</button>`;
+}
+
+function renderGrid() {
+  let tools = data.tools;
+  if (activeCategory !== "全部") tools = tools.filter(t=>t.category===activeCategory);
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    tools = tools.filter(t=>t.name.toLowerCase().includes(q)||t.desc.toLowerCase().includes(q));
+  }
+  document.getElementById("sectionCount").textContent = `共 ${tools.length} 個工具`;
+  if (!tools.length) {
+    document.getElementById("grid").innerHTML = `<div class="empty"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><h3>尚無工具</h3><p>點擊右上角「新增工具」開始建立</p></div>`;
+    return;
+  }
+  document.getElementById("grid").innerHTML = tools.map(t=>`
+    <div class="card">
+      <a class="card-link" href="${esc(t.url)}" target="_blank" rel="noopener">
+        <div class="card-icon">${t.icon||"🔧"}</div>
+        <div class="card-title">${esc(t.name)}</div>
+        <div class="card-desc">${esc(t.desc||"")}</div>
+        <div class="card-footer">
+          <span class="card-cat">${esc(t.category)}</span>
+          <span class="card-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+        </div>
+      </a>
+      <div class="card-actions">
+        <button class="btn btn-ghost" onclick="editTool(${t.id})"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>編輯</button>
+        <button class="btn btn-ghost" style="color:#EF5350" onclick="deleteTool(${t.id})"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>刪除</button>
+      </div>
+    </div>`).join("");
+}
+
+// ─── Category ────────────────────────────────────────────────────
+function setCategory(c) { activeCategory=c; render(); }
+
+function openCatModal() { renderCatList(); document.getElementById("fCatName").value=""; openModal("modalCat"); }
+
+function renderCatList() {
+  const cats = data.categories.filter(c=>c!=="全部");
+  document.getElementById("catList").innerHTML = cats.length ?
+    cats.map(c=>`<div class="cat-item"><span>${esc(c)}</span><button class="btn btn-ghost" style="color:#EF5350;padding:4px 8px;border-radius:6px" onclick="deleteCategory('${esc(c)}')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>`).join("") :
+    '<p style="font-size:13px;color:var(--gray-300);text-align:center;padding:8px 0">尚無自訂分類</p>';
+}
+
+document.getElementById("btnCatAdd").addEventListener("click",()=>{
+  const name=document.getElementById("fCatName").value.trim();
+  if(!name){toast("請輸入分類名稱");return;}
+  if(data.categories.includes(name)){toast("此分類已存在");return;}
+  data.categories.push(name); saveData(); render(); renderCatList();
+  document.getElementById("fCatName").value=""; toast(`已新增分類「${name}」`);
+});
+
+function deleteCategory(cat) {
+  if(data.tools.filter(t=>t.category===cat).length>0){toast(`此分類下有工具，請先移除或改分類`);return;}
+  data.categories=data.categories.filter(c=>c!==cat);
+  if(activeCategory===cat) activeCategory="全部";
+  saveData(); render(); renderCatList(); toast(`已刪除分類「${cat}」`);
+}
+
+// ─── Tool CRUD ───────────────────────────────────────────────────
+function openAddModal() {
+  editingId=null; document.getElementById("modalToolTitle").textContent="新增工具";
+  ["fName","fUrl","fDesc"].forEach(id=>document.getElementById(id).value="");
+  selectedIcon="🔧"; buildCatSelect(); buildIconPicker(); openModal("modalTool");
+}
+
+function editTool(id) {
+  const t=data.tools.find(x=>x.id===id); if(!t) return;
+  editingId=id; document.getElementById("modalToolTitle").textContent="編輯工具";
+  document.getElementById("fName").value=t.name;
+  document.getElementById("fUrl").value=t.url;
+  document.getElementById("fDesc").value=t.desc||"";
+  selectedIcon=t.icon||"🔧"; buildCatSelect(t.category); buildIconPicker(); openModal("modalTool");
+}
+
+function deleteTool(id) {
+  const t=data.tools.find(x=>x.id===id); if(!t) return;
+  if(!confirm(`確定要刪除「${t.name}」？`)) return;
+  data.tools=data.tools.filter(x=>x.id!==id); saveData(); render(); toast(`已刪除「${t.name}」`);
+}
+
+document.getElementById("btnToolSave").addEventListener("click",()=>{
+  const name=document.getElementById("fName").value.trim();
+  const url=document.getElementById("fUrl").value.trim();
+  const desc=document.getElementById("fDesc").value.trim();
+  const cat=document.getElementById("fCat").value;
+  if(!name){toast("請輸入工具名稱");return;}
+  if(!url){toast("請輸入網址");return;}
+  if(editingId){
+    Object.assign(data.tools.find(x=>x.id===editingId),{name,url,desc,category:cat,icon:selectedIcon});
+    toast(`已更新「${name}」`);
+  } else {
+    data.tools.push({id:nextId(),name,url,desc,category:cat,icon:selectedIcon});
+    toast(`已新增「${name}」`);
+  }
+  saveData(); render(); closeModal("modalTool");
+});
+
+function buildCatSelect(selected) {
+  const cats=data.categories.filter(c=>c!=="全部");
+  document.getElementById("fCat").innerHTML = cats.length ?
+    cats.map(c=>`<option value="${esc(c)}"${c===selected?" selected":""}>${esc(c)}</option>`).join("") :
+    '<option value="">請先新增分類</option>';
+}
+function buildIconPicker() {
+  document.getElementById("iconPicker").innerHTML =
+    ICONS.map(ic=>`<div class="icon-opt${ic===selectedIcon?" selected":""}" onclick="pickIcon('${ic}')">${ic}</div>`).join("");
+}
+function pickIcon(ic) { selectedIcon=ic; buildIconPicker(); }
+
+// ─── Export / Import ─────────────────────────────────────────────
+document.getElementById("btnExport").addEventListener("click",()=>{
+  document.getElementById("exportArea").value=JSON.stringify(data,null,2); openModal("modalExport");
+});
+document.getElementById("btnCopyJson").addEventListener("click",()=>{
+  navigator.clipboard.writeText(document.getElementById("exportArea").value)
+    .then(()=>toast("已複製到剪貼簿")).catch(()=>toast("請手動複製文字"));
+});
+document.getElementById("btnImport").addEventListener("click",()=>{
+  document.getElementById("importArea").value=""; openModal("modalImport");
+});
+document.getElementById("btnImportConfirm").addEventListener("click",()=>{
+  try {
+    const p=JSON.parse(document.getElementById("importArea").value);
+    if(!p.tools||!Array.isArray(p.tools)) throw new Error();
+    data=p;
+    if(!data.categories) data.categories=["全部","其他"];
+    if(!data.categories.includes("全部")) data.categories.unshift("全部");
+    activeCategory="全部"; saveData(); render(); closeModal("modalImport");
+    toast(`匯入成功，共 ${data.tools.length} 個工具`);
+  } catch(e){ toast("JSON 格式錯誤，請確認後再試"); }
+});
+
+// ─── Modal helpers ───────────────────────────────────────────────
+function openModal(id)  { document.getElementById(id).classList.add("open"); }
+function closeModal(id) { document.getElementById(id).classList.remove("open"); }
+
+document.getElementById("btnAdd").addEventListener("click", openAddModal);
+document.getElementById("btnToolCancel").addEventListener("click",()=>closeModal("modalTool"));
+document.getElementById("btnToolClose").addEventListener("click", ()=>closeModal("modalTool"));
+document.querySelectorAll(".overlay").forEach(el=>
+  el.addEventListener("click", e=>{ if(e.target===el) closeModal(el.id); })
+);
+
+// ─── Search ──────────────────────────────────────────────────────
+document.getElementById("searchInput").addEventListener("input", e=>{
+  searchQuery=e.target.value.trim(); render();
+});
+
+// ─── Toast ───────────────────────────────────────────────────────
+function toast(msg) {
+  const el=document.getElementById("toast");
+  el.textContent=msg; el.classList.add("show");
+  clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove("show"),2600);
+}
+</script>
+</body>
+</html>
