@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EUP 工具入口</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
   :root {
     --teal-dark:  #00796B;
@@ -15,231 +16,82 @@
     --blue:       #1565C0;
     --blue-mid:   #1E88E5;
     --grad: linear-gradient(135deg, #4DB6AC 0%, #26A69A 38%, #1E88E5 100%);
-
-    --gray-50:  #F5F7FA;
-    --gray-100: #EEF0F4;
-    --gray-200: #DDE1E9;
-    --gray-300: #C5CBD8;
-    --gray-400: #9AA3B2;
-    --gray-500: #6B7384;
-    --gray-600: #4A5264;
-    --gray-700: #343A4D;
-    --gray-800: #1F2535;
-    --gray-900: #111827;
-
+    --gray-50:  #F5F7FA; --gray-100: #EEF0F4; --gray-200: #DDE1E9;
+    --gray-300: #C5CBD8; --gray-400: #9AA3B2; --gray-500: #6B7384;
+    --gray-600: #4A5264; --gray-700: #343A4D; --gray-800: #1F2535; --gray-900: #111827;
     --white: #FFFFFF;
     --shadow-sm: 0 1px 3px rgba(0,0,0,.07), 0 2px 8px rgba(0,0,0,.05);
     --shadow:    0 2px 6px rgba(0,0,0,.08), 0 6px 20px rgba(0,0,0,.07);
     --shadow-lg: 0 8px 24px rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.06);
-    --radius: 14px;
-    --radius-sm: 8px;
+    --radius: 14px; --radius-sm: 8px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", "PingFang TC", sans-serif;
-    background: var(--gray-50);
-    color: var(--gray-800);
-    min-height: 100vh;
-  }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", "PingFang TC", sans-serif; background: var(--gray-50); color: var(--gray-800); min-height: 100vh; }
 
-  /* ══════════════════════════════════════
-     LOGIN SCREEN
-  ══════════════════════════════════════ */
-  #login-screen {
-    display: flex;
-    min-height: 100vh;
-  }
-
-  /* Left gradient panel */
+  /* ── Login Screen ── */
+  #login-screen { display: flex; min-height: 100vh; }
   .login-left {
-    flex: 1;
-    background: var(--grad);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 48px;
-    position: relative;
-    overflow: hidden;
+    flex: 1; background: var(--grad);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 48px; position: relative; overflow: hidden;
   }
-  .login-left::before {
-    content: "";
-    position: absolute;
-    width: 420px; height: 420px;
-    border-radius: 50%;
-    background: rgba(255,255,255,.08);
-    top: -140px; right: -100px;
-  }
-  .login-left::after {
-    content: "";
-    position: absolute;
-    width: 260px; height: 260px;
-    border-radius: 50%;
-    background: rgba(255,255,255,.06);
-    bottom: -80px; left: -60px;
-  }
-  .login-brand {
-    position: relative; z-index: 1;
-    text-align: center; color: white;
-  }
-  .login-brand-icon {
-    width: 72px; height: 72px;
-    background: rgba(255,255,255,.2);
-    border-radius: 18px;
-    display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 24px;
-    backdrop-filter: blur(8px);
-  }
-  .login-brand-icon svg { width: 36px; height: 36px; color: white; }
-  .login-brand-title {
-    font-size: 28px; font-weight: 700;
-    letter-spacing: 1px; margin-bottom: 10px;
-  }
-  .login-brand-sub {
-    font-size: 15px; letter-spacing: 6px;
-    opacity: .8; margin-bottom: 28px;
-  }
-  .login-brand-desc {
-    font-size: 13px; opacity: .65;
-    background: rgba(255,255,255,.12);
-    padding: 10px 22px; border-radius: 20px;
-    letter-spacing: .5px;
+  .login-left::before { content:""; position:absolute; width:420px; height:420px; border-radius:50%; background:rgba(255,255,255,.08); top:-140px; right:-100px; }
+  .login-left::after  { content:""; position:absolute; width:260px; height:260px; border-radius:50%; background:rgba(255,255,255,.06); bottom:-80px; left:-60px; }
+  .login-brand { position:relative; z-index:1; text-align:center; color:white; }
+  .login-brand-icon { width:72px; height:72px; background:rgba(255,255,255,.2); border-radius:18px; display:flex; align-items:center; justify-content:center; margin:0 auto 24px; backdrop-filter:blur(8px); }
+  .login-brand-icon svg { width:36px; height:36px; color:white; }
+  .login-brand-title { font-size:28px; font-weight:700; letter-spacing:1px; margin-bottom:10px; }
+  .login-brand-sub { font-size:15px; letter-spacing:6px; opacity:.8; margin-bottom:28px; }
+  .login-brand-desc { font-size:13px; opacity:.65; background:rgba(255,255,255,.12); padding:10px 22px; border-radius:20px; letter-spacing:.5px; }
+  .login-right { width:420px; flex-shrink:0; background:white; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:56px 48px; position:relative; }
+  .login-logo { display:flex; align-items:center; gap:10px; margin-bottom:36px; }
+  .login-logo-icon { width:38px; height:38px; background:var(--grad); border-radius:10px; display:flex; align-items:center; justify-content:center; }
+  .login-logo-icon svg { width:20px; height:20px; color:white; }
+  .login-logo-name { font-size:20px; font-weight:700; color:var(--teal-dark); letter-spacing:.5px; }
+  .login-welcome { font-size:26px; font-weight:700; color:var(--gray-900); margin-bottom:10px; text-align:center; }
+  .login-hint { font-size:13px; color:var(--gray-400); text-align:center; line-height:1.6; margin-bottom:32px; }
+  .login-hint strong { color:var(--gray-600); }
+  .login-error { display:none; font-size:13px; color:#D32F2F; background:#FFEBEE; padding:10px 16px; border-radius:8px; text-align:center; margin-top:12px; width:100%; }
+  .login-footer { position:absolute; bottom:24px; font-size:11px; color:var(--gray-300); letter-spacing:.3px; }
+  @media (max-width:720px) {
+    #login-screen { flex-direction:column; }
+    .login-left { min-height:220px; flex:none; padding:32px 24px; }
+    .login-right { width:100%; flex:1; padding:40px 28px; }
   }
 
-  /* Right white panel */
-  .login-right {
-    width: 420px;
-    flex-shrink: 0;
-    background: white;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 56px 48px;
-    position: relative;
-  }
-  .login-logo {
-    display: flex; align-items: center; gap: 10px;
-    margin-bottom: 36px;
-  }
-  .login-logo-icon {
-    width: 38px; height: 38px;
-    background: var(--grad);
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .login-logo-icon svg { width: 20px; height: 20px; color: white; }
-  .login-logo-name { font-size: 20px; font-weight: 700; color: var(--teal-dark); letter-spacing: .5px; }
-
-  .login-welcome {
-    font-size: 26px; font-weight: 700;
-    color: var(--gray-900); margin-bottom: 10px; text-align: center;
-  }
-  .login-hint {
-    font-size: 13px; color: var(--gray-400);
-    text-align: center; line-height: 1.6; margin-bottom: 32px;
-  }
-  .login-hint strong { color: var(--gray-600); }
-
-  .g-signin-wrap { margin-bottom: 20px; }
-
-  .login-error {
-    display: none;
-    font-size: 13px; color: #D32F2F;
-    background: #FFEBEE;
-    padding: 10px 16px; border-radius: 8px;
-    text-align: center; margin-top: 12px;
-    width: 100%;
-  }
-
-  .login-footer {
-    position: absolute; bottom: 24px;
-    font-size: 11px; color: var(--gray-300);
-    letter-spacing: .3px;
-  }
-
-  @media (max-width: 720px) {
-    #login-screen { flex-direction: column; }
-    .login-left { min-height: 220px; flex: none; padding: 32px 24px; }
-    .login-right { width: 100%; flex: 1; padding: 40px 28px; }
-    .login-brand-title { font-size: 22px; }
-  }
-
-  /* ══════════════════════════════════════
-     MAIN APP  (hidden until logged in)
-  ══════════════════════════════════════ */
-  #app { display: none; }
+  /* ── App ── */
+  #app { display:none; }
 
   /* ── Header ── */
-  header {
-    background: var(--white);
-    border-bottom: 1px solid var(--gray-200);
-    height: 62px; padding: 0 28px;
-    display: flex; align-items: center; justify-content: space-between;
-    position: sticky; top: 0; z-index: 200;
-    box-shadow: 0 1px 0 var(--gray-200), 0 2px 8px rgba(0,0,0,.04);
-  }
-  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-  .logo-icon {
-    width: 34px; height: 34px;
-    background: var(--grad); border-radius: 9px;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  }
-  .logo-icon svg { width: 18px; height: 18px; color: white; }
-  .logo-text { display: flex; flex-direction: column; line-height: 1.2; }
-  .logo-name { font-size: 15px; font-weight: 700; color: var(--teal-dark); letter-spacing: .5px; }
-  .logo-sub  { font-size: 11px; color: var(--gray-400); letter-spacing: .3px; }
+  header { background:var(--white); border-bottom:1px solid var(--gray-200); height:62px; padding:0 28px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:200; box-shadow:0 1px 0 var(--gray-200),0 2px 8px rgba(0,0,0,.04); }
+  .logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
+  .logo-icon { width:34px; height:34px; background:var(--grad); border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .logo-icon svg { width:18px; height:18px; color:white; }
+  .logo-text { display:flex; flex-direction:column; line-height:1.2; }
+  .logo-name { font-size:15px; font-weight:700; color:var(--teal-dark); letter-spacing:.5px; }
+  .logo-sub  { font-size:11px; color:var(--gray-400); letter-spacing:.3px; }
+  .header-right { display:flex; align-items:center; gap:8px; }
+  .user-chip { display:flex; align-items:center; gap:8px; padding:4px 12px 4px 4px; border-radius:20px; border:1px solid var(--gray-200); background:white; cursor:default; }
+  .user-avatar { width:28px; height:28px; border-radius:50%; object-fit:cover; flex-shrink:0; }
+  .user-avatar-fallback { width:28px; height:28px; border-radius:50%; background:var(--grad); color:white; font-size:12px; font-weight:600; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .user-name { font-size:13px; color:var(--gray-600); font-weight:500; }
 
-  .header-right { display: flex; align-items: center; gap: 10px; }
-
-  /* User avatar */
-  .user-chip {
-    display: flex; align-items: center; gap: 8px;
-    padding: 4px 12px 4px 4px;
-    border-radius: 20px; border: 1px solid var(--gray-200);
-    background: white; cursor: default;
-  }
-  .user-avatar {
-    width: 28px; height: 28px; border-radius: 50%;
-    object-fit: cover; flex-shrink: 0;
-  }
-  .user-avatar-fallback {
-    width: 28px; height: 28px; border-radius: 50%;
-    background: var(--grad); color: white;
-    font-size: 12px; font-weight: 600;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  }
-  .user-name { font-size: 13px; color: var(--gray-600); font-weight: 500; }
-
-  /* Buttons */
-  .btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 7px 15px; border-radius: 8px;
-    font-size: 13px; font-weight: 500;
-    cursor: pointer; border: none; transition: all .18s;
-    white-space: nowrap; font-family: inherit;
-  }
-  .btn svg { width: 14px; height: 14px; flex-shrink: 0; }
-  .btn-primary {
-    background: var(--grad); color: white;
-    box-shadow: 0 2px 8px rgba(0,150,136,.35);
-  }
-  .btn-primary:hover { filter: brightness(1.08); box-shadow: 0 4px 14px rgba(0,150,136,.45); transform: translateY(-1px); }
-  .btn-outline {
-    background: white; color: var(--gray-600);
-    border: 1px solid var(--gray-200); box-shadow: var(--shadow-sm);
-  }
-  .btn-outline:hover { border-color: var(--teal-light); color: var(--teal); background: var(--teal-pale); }
-  .btn-ghost { background: transparent; color: var(--gray-400); padding: 6px 9px; }
-  .btn-ghost:hover { background: var(--gray-100); color: var(--gray-600); }
-  .btn-danger { background: #EF5350; color: white; }
-  .btn-danger:hover { background: #D32F2F; }
+  /* ── Buttons ── */
+  .btn { display:inline-flex; align-items:center; gap:6px; padding:7px 15px; border-radius:8px; font-size:13px; font-weight:500; cursor:pointer; border:none; transition:all .18s; white-space:nowrap; font-family:inherit; }
+  .btn svg { width:14px; height:14px; flex-shrink:0; }
+  .btn-primary { background:var(--grad); color:white; box-shadow:0 2px 8px rgba(0,150,136,.35); }
+  .btn-primary:hover { filter:brightness(1.08); box-shadow:0 4px 14px rgba(0,150,136,.45); transform:translateY(-1px); }
+  .btn-outline { background:white; color:var(--gray-600); border:1px solid var(--gray-200); box-shadow:var(--shadow-sm); }
+  .btn-outline:hover { border-color:var(--teal-light); color:var(--teal); background:var(--teal-pale); }
+  .btn-ghost { background:transparent; color:var(--gray-400); padding:6px 9px; }
+  .btn-ghost:hover { background:var(--gray-100); color:var(--gray-600); }
+  .btn-danger { background:#EF5350; color:white; }
+  .btn-danger:hover { background:#D32F2F; }
+  .btn-teal { background:var(--teal-pale); color:var(--teal); border:none; }
+  .btn-teal:hover { background:var(--teal); color:white; }
 
   /* ── Hero ── */
-  .hero {
-    background: var(--grad); padding: 28px 28px 72px;
-    position: relative; overflow: hidden;
-  }
+  .hero { background:var(--grad); padding:28px 28px 72px; position:relative; overflow:hidden; }
   .hero::before { content:""; position:absolute; width:320px; height:320px; border-radius:50%; background:rgba(255,255,255,.08); top:-100px; right:-60px; pointer-events:none; }
   .hero::after  { content:""; position:absolute; width:200px; height:200px; border-radius:50%; background:rgba(255,255,255,.06); bottom:-80px; left:40%; pointer-events:none; }
   .hero-inner { position:relative; z-index:1; }
@@ -247,303 +99,206 @@
   .hero-sub   { font-size:13px; color:rgba(255,255,255,.75); letter-spacing:.3px; }
 
   /* ── Search ── */
-  .search-float { padding: 0 28px; margin-top: -38px; position: relative; z-index: 10; }
-  .search-box {
-    display: flex; align-items: center; gap: 10px;
-    background: white; border: 1px solid var(--gray-200);
-    border-radius: 12px; padding: 11px 16px;
-    box-shadow: var(--shadow-lg); max-width: 560px;
-  }
-  .search-box svg { color: var(--gray-300); flex-shrink:0; width:17px; height:17px; }
-  .search-box input {
-    border:none; outline:none; flex:1;
-    font-size:14px; color:var(--gray-800);
-    background:transparent; font-family:inherit;
-  }
+  .search-float { padding:0 28px; margin-top:-38px; position:relative; z-index:10; }
+  .search-box { display:flex; align-items:center; gap:10px; background:white; border:1px solid var(--gray-200); border-radius:12px; padding:11px 16px; box-shadow:var(--shadow-lg); max-width:560px; }
+  .search-box svg { color:var(--gray-300); flex-shrink:0; width:17px; height:17px; }
+  .search-box input { border:none; outline:none; flex:1; font-size:14px; color:var(--gray-800); background:transparent; font-family:inherit; }
   .search-box input::placeholder { color:var(--gray-300); }
 
   /* ── Tabs ── */
-  .tabs-wrap {
-    padding: 20px 28px 0;
-    display: flex; align-items: center; gap: 6px;
-    overflow-x: auto; scrollbar-width: none;
-  }
-  .tabs-wrap::-webkit-scrollbar { display: none; }
-  .tab {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 7px 16px; border-radius: 20px;
-    font-size: 13px; font-weight: 500; cursor: pointer;
-    white-space: nowrap; border: 1px solid var(--gray-200);
-    color: var(--gray-500); background: white; transition: all .15s; font-family: inherit;
-  }
-  .tab:hover { border-color: var(--teal-light); color: var(--teal); }
-  .tab.active { background: var(--teal); color: white; border-color: var(--teal); box-shadow: 0 2px 8px rgba(0,150,136,.3); }
-  .tab .badge { font-size: 11px; padding: 1px 7px; border-radius: 10px; background: rgba(255,255,255,.2); color: inherit; }
-  .tab:not(.active) .badge { background: var(--gray-100); }
-  .tab-add {
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 7px 14px; border-radius: 20px; font-size: 13px;
-    cursor: pointer; border: 1px dashed var(--gray-300);
-    color: var(--gray-400); background: transparent;
-    transition: all .15s; white-space: nowrap; font-family: inherit;
-  }
-  .tab-add:hover { border-color: var(--teal); color: var(--teal); }
+  .tabs-wrap { padding:20px 28px 0; display:flex; align-items:center; gap:6px; overflow-x:auto; scrollbar-width:none; }
+  .tabs-wrap::-webkit-scrollbar { display:none; }
+  .tab { display:inline-flex; align-items:center; gap:6px; padding:7px 16px; border-radius:20px; font-size:13px; font-weight:500; cursor:pointer; white-space:nowrap; border:1px solid var(--gray-200); color:var(--gray-500); background:white; transition:all .15s; font-family:inherit; }
+  .tab:hover { border-color:var(--teal-light); color:var(--teal); }
+  .tab.active { background:var(--teal); color:white; border-color:var(--teal); box-shadow:0 2px 8px rgba(0,150,136,.3); }
+  .tab .badge { font-size:11px; padding:1px 7px; border-radius:10px; background:rgba(255,255,255,.2); color:inherit; }
+  .tab:not(.active) .badge { background:var(--gray-100); }
+  .tab-add { display:inline-flex; align-items:center; gap:5px; padding:7px 14px; border-radius:20px; font-size:13px; cursor:pointer; border:1px dashed var(--gray-300); color:var(--gray-400); background:transparent; transition:all .15s; white-space:nowrap; font-family:inherit; }
+  .tab-add:hover { border-color:var(--teal); color:var(--teal); }
 
   /* ── Grid ── */
-  .section-header {
-    padding: 20px 28px 12px;
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .section-count { font-size: 13px; color: var(--gray-400); }
-  .grid-wrap { padding: 0 28px 48px; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; }
+  .section-header { padding:20px 28px 12px; display:flex; align-items:center; justify-content:space-between; }
+  .section-count { font-size:13px; color:var(--gray-400); }
+  .grid-wrap { padding:0 28px 48px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(230px, 1fr)); gap:16px; }
 
   /* ── Card ── */
-  .card {
-    background: white; border-radius: var(--radius);
-    border: 1px solid var(--gray-200); box-shadow: var(--shadow-sm);
-    overflow: hidden; display: flex; flex-direction: column;
-    transition: box-shadow .2s, transform .2s, border-color .2s; position: relative;
-  }
-  .card::before {
-    content:""; position:absolute; top:0; left:0; right:0; height:3px;
-    background:var(--grad); opacity:0; transition:opacity .2s;
-  }
-  .card:hover { box-shadow: var(--shadow-lg); transform: translateY(-3px); border-color: var(--teal-light); }
-  .card:hover::before { opacity: 1; }
-  .card-link {
-    text-decoration: none; color: inherit; flex: 1;
-    display: flex; flex-direction: column; padding: 20px 20px 16px;
-  }
-  .card-icon {
-    width: 46px; height: 46px; border-radius: 12px;
-    background: var(--teal-pale); display: flex; align-items: center;
-    justify-content: center; font-size: 22px; margin-bottom: 14px;
-    flex-shrink: 0; transition: transform .2s;
-  }
-  .card:hover .card-icon { transform: scale(1.08); }
-  .card-title { font-size: 15px; font-weight: 600; color: var(--gray-800); margin-bottom: 6px; line-height: 1.35; }
-  .card-desc  { font-size: 12px; color: var(--gray-400); line-height: 1.6; flex: 1; }
-  .card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; }
-  .card-cat { font-size: 11px; font-weight: 500; color: var(--teal); background: var(--teal-pale); padding: 3px 9px; border-radius: 10px; }
-  .card-arrow {
-    width: 20px; height: 20px; border-radius: 50%;
-    background: var(--gray-100); display: flex; align-items: center;
-    justify-content: center; color: var(--gray-400); transition: all .2s;
-  }
-  .card:hover .card-arrow { background: var(--teal); color: white; }
-  .card-arrow svg { width: 11px; height: 11px; }
-  .card-actions {
-    display: flex; gap: 4px; padding: 8px 14px;
-    border-top: 1px solid var(--gray-100);
-    opacity: 0; transition: opacity .15s;
-  }
-  .card:hover .card-actions { opacity: 1; }
-  .card-actions .btn-ghost { padding: 4px 9px; font-size: 12px; border-radius: 6px; }
+  .card { background:white; border-radius:var(--radius); border:1px solid var(--gray-200); box-shadow:var(--shadow-sm); overflow:hidden; display:flex; flex-direction:column; transition:box-shadow .2s,transform .2s,border-color .2s; position:relative; }
+  .card::before { content:""; position:absolute; top:0; left:0; right:0; height:3px; background:var(--grad); opacity:0; transition:opacity .2s; }
+  .card:hover { box-shadow:var(--shadow-lg); transform:translateY(-3px); border-color:var(--teal-light); }
+  .card:hover::before { opacity:1; }
+  .card-link { text-decoration:none; color:inherit; flex:1; display:flex; flex-direction:column; padding:20px 20px 16px; }
+  .card-icon { width:46px; height:46px; border-radius:12px; background:var(--teal-pale); display:flex; align-items:center; justify-content:center; font-size:22px; margin-bottom:14px; flex-shrink:0; transition:transform .2s; }
+  .card:hover .card-icon { transform:scale(1.08); }
+  .card-title { font-size:15px; font-weight:600; color:var(--gray-800); margin-bottom:6px; line-height:1.35; }
+  .card-desc  { font-size:12px; color:var(--gray-400); line-height:1.6; flex:1; }
+  .card-footer { display:flex; align-items:center; justify-content:space-between; margin-top:14px; }
+  .card-cat { font-size:11px; font-weight:500; color:var(--teal); background:var(--teal-pale); padding:3px 9px; border-radius:10px; }
+  .card-arrow { width:20px; height:20px; border-radius:50%; background:var(--gray-100); display:flex; align-items:center; justify-content:center; color:var(--gray-400); transition:all .2s; }
+  .card:hover .card-arrow { background:var(--teal); color:white; }
+  .card-arrow svg { width:11px; height:11px; }
+  .card-dl-bar { display:flex; align-items:center; padding:8px 14px 10px; gap:6px; }
+  .card-dl-btn { display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:500; color:var(--teal); background:var(--teal-pale); border:none; border-radius:7px; padding:5px 11px; cursor:pointer; font-family:inherit; transition:all .15s; text-decoration:none; }
+  .card-dl-btn:hover { background:var(--teal); color:white; }
+  .card-dl-btn svg { width:12px; height:12px; flex-shrink:0; }
+  .card-actions { display:flex; gap:4px; padding:8px 14px; border-top:1px solid var(--gray-100); opacity:0; transition:opacity .15s; }
+  .card:hover .card-actions { opacity:1; }
+  .card-actions .btn-ghost { padding:4px 9px; font-size:12px; border-radius:6px; }
 
   /* ── Empty ── */
-  .empty { grid-column: 1/-1; text-align: center; padding: 64px 20px; color: var(--gray-300); }
-  .empty svg { width: 52px; height: 52px; margin-bottom: 14px; }
-  .empty h3 { font-size: 15px; font-weight: 600; color: var(--gray-400); margin-bottom: 6px; }
-  .empty p { font-size: 13px; }
+  .empty { grid-column:1/-1; text-align:center; padding:64px 20px; color:var(--gray-300); }
+  .empty svg { width:52px; height:52px; margin-bottom:14px; }
+  .empty h3 { font-size:15px; font-weight:600; color:var(--gray-400); margin-bottom:6px; }
+  .empty p { font-size:13px; }
 
   /* ── Modal ── */
-  .overlay {
-    position: fixed; inset: 0; background: rgba(15,20,35,.45);
-    backdrop-filter: blur(4px);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 1000; padding: 20px;
-    opacity: 0; pointer-events: none; transition: opacity .2s;
-  }
-  .overlay.open { opacity: 1; pointer-events: all; }
-  .modal {
-    background: white; border-radius: 18px; padding: 30px;
-    width: 100%; max-width: 490px;
-    box-shadow: 0 24px 64px rgba(0,0,0,.2), 0 4px 16px rgba(0,0,0,.08);
-    transform: translateY(20px) scale(.97); transition: transform .22s;
-  }
-  .overlay.open .modal { transform: translateY(0) scale(1); }
-  .modal-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 22px; }
-  .modal-title { font-size: 18px; font-weight: 700; color: var(--gray-900); }
-  .modal-close {
-    width: 28px; height: 28px; border-radius: 7px; border: none;
-    background: var(--gray-100); cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--gray-400); transition: all .15s; flex-shrink: 0;
-  }
-  .modal-close:hover { background: var(--gray-200); color: var(--gray-700); }
-  .modal-close svg { width: 14px; height: 14px; }
-  .modal-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px; }
+  .overlay { position:fixed; inset:0; background:rgba(15,20,35,.45); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; z-index:1000; padding:20px; opacity:0; pointer-events:none; transition:opacity .2s; }
+  .overlay.open { opacity:1; pointer-events:all; }
+  .modal { background:white; border-radius:18px; padding:30px; width:100%; max-width:520px; box-shadow:0 24px 64px rgba(0,0,0,.2),0 4px 16px rgba(0,0,0,.08); transform:translateY(20px) scale(.97); transition:transform .22s; max-height:90vh; overflow-y:auto; }
+  .overlay.open .modal { transform:translateY(0) scale(1); }
+  .modal-head { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:22px; }
+  .modal-title { font-size:18px; font-weight:700; color:var(--gray-900); }
+  .modal-close { width:28px; height:28px; border-radius:7px; border:none; background:var(--gray-100); cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--gray-400); transition:all .15s; flex-shrink:0; }
+  .modal-close:hover { background:var(--gray-200); color:var(--gray-700); }
+  .modal-close svg { width:14px; height:14px; }
+  .modal-foot { display:flex; justify-content:flex-end; gap:8px; margin-top:24px; }
 
-  .field { margin-bottom: 16px; }
-  .field label { display: block; font-size: 12px; font-weight: 600; color: var(--gray-500); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .6px; }
-  .field input, .field textarea, .field select {
-    width: 100%; padding: 10px 13px; border: 1.5px solid var(--gray-200);
-    border-radius: var(--radius-sm); font-size: 14px; color: var(--gray-800);
-    outline: none; transition: border .15s; background: white; font-family: inherit;
-  }
-  .field input:focus, .field textarea:focus, .field select:focus {
-    border-color: var(--teal); box-shadow: 0 0 0 3px rgba(0,150,136,.1);
-  }
-  .field textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
+  /* Fields */
+  .field { margin-bottom:16px; }
+  .field label { display:block; font-size:12px; font-weight:600; color:var(--gray-500); margin-bottom:6px; text-transform:uppercase; letter-spacing:.6px; }
+  .field input, .field textarea, .field select { width:100%; padding:10px 13px; border:1.5px solid var(--gray-200); border-radius:var(--radius-sm); font-size:14px; color:var(--gray-800); outline:none; transition:border .15s; background:white; font-family:inherit; }
+  .field input:focus, .field textarea:focus, .field select:focus { border-color:var(--teal); box-shadow:0 0 0 3px rgba(0,150,136,.1); }
+  .field textarea { resize:vertical; min-height:72px; line-height:1.5; }
+  .field-optional { font-size:11px; color:var(--gray-300); font-weight:400; text-transform:none; letter-spacing:0; margin-left:4px; }
 
-  .icon-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-  .icon-opt {
-    width: 38px; height: 38px; border-radius: 9px;
-    border: 1.5px solid var(--gray-200); font-size: 18px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: all .12s; background: white;
-  }
-  .icon-opt:hover { border-color: var(--teal-light); background: var(--teal-pale); }
-  .icon-opt.selected { border-color: var(--teal); background: var(--teal-pale); box-shadow: 0 0 0 2px rgba(0,150,136,.25); }
+  /* Icon picker */
+  .icon-grid { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .icon-opt { width:38px; height:38px; border-radius:9px; border:1.5px solid var(--gray-200); font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .12s; background:white; }
+  .icon-opt:hover { border-color:var(--teal-light); background:var(--teal-pale); }
+  .icon-opt.selected { border-color:var(--teal); background:var(--teal-pale); box-shadow:0 0 0 2px rgba(0,150,136,.25); }
 
-  .json-area {
-    width: 100%; height: 190px; font-family: "Consolas","Monaco",monospace;
-    font-size: 12px; line-height: 1.6; padding: 10px 12px;
-    border: 1.5px solid var(--gray-200); border-radius: var(--radius-sm);
-    outline: none; resize: vertical; color: var(--gray-700);
-  }
-  .json-area:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(0,150,136,.1); }
+  /* Download section in tool modal */
+  .dl-tabs { display:flex; gap:4px; margin-bottom:10px; }
+  .dl-tab { padding:5px 14px; border-radius:7px; font-size:12px; font-weight:500; cursor:pointer; border:1.5px solid var(--gray-200); background:white; color:var(--gray-500); transition:all .15s; font-family:inherit; }
+  .dl-tab.active { background:var(--teal-pale); border-color:var(--teal); color:var(--teal); }
 
-  .cat-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-  .cat-item {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 9px 14px; border-radius: var(--radius-sm);
-    border: 1px solid var(--gray-200); background: var(--gray-50);
-  }
-  .cat-item span { font-size: 14px; color: var(--gray-700); }
+  /* Upload area */
+  .upload-area { border:2px dashed var(--gray-200); border-radius:10px; padding:24px 16px; text-align:center; cursor:pointer; transition:all .15s; background:var(--gray-50); position:relative; }
+  .upload-area:hover, .upload-area.drag-over { border-color:var(--teal); background:var(--teal-pale); }
+  .upload-area input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+  .upload-area svg { width:28px; height:28px; color:var(--gray-300); margin-bottom:8px; }
+  .upload-area p { font-size:13px; color:var(--gray-400); margin:0; }
+  .upload-area .hint { font-size:11px; color:var(--gray-300); margin-top:4px; }
+  .upload-area.has-files { border-color:var(--teal); background:var(--teal-pale); }
+  .upload-area.has-files p { color:var(--teal); font-weight:500; }
 
-  /* ── Toast ── */
-  .toast {
-    position: fixed; bottom: 28px; left: 50%;
-    transform: translateX(-50%) translateY(12px);
-    background: var(--gray-900); color: white;
-    padding: 10px 22px; border-radius: 10px; font-size: 13px;
-    z-index: 2000; opacity: 0; pointer-events: none;
-    transition: all .25s; box-shadow: 0 4px 16px rgba(0,0,0,.25);
-  }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  /* Progress */
+  .progress-wrap { margin-top:10px; display:none; }
+  .progress-wrap.show { display:block; }
+  .progress-bar-bg { height:6px; background:var(--gray-200); border-radius:3px; overflow:hidden; }
+  .progress-bar { height:100%; background:var(--grad); border-radius:3px; transition:width .3s; width:0%; }
+  .progress-label { font-size:12px; color:var(--gray-500); margin-top:5px; }
 
-  footer {
-    text-align: center; padding: 0 0 28px;
-    font-size: 12px; color: var(--gray-300); letter-spacing: .3px;
-  }
+  /* Existing download display */
+  .dl-existing { display:flex; align-items:center; gap:8px; padding:9px 12px; background:var(--teal-pale); border-radius:8px; margin-top:8px; }
+  .dl-existing span { font-size:12px; color:var(--teal); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .dl-existing button { border:none; background:transparent; cursor:pointer; color:var(--gray-400); padding:2px; font-size:16px; line-height:1; }
+  .dl-existing button:hover { color:#EF5350; }
 
-  @media (max-width: 600px) {
-    header, .hero, .search-float, .tabs-wrap, .section-header, .grid-wrap { padding-left: 16px; padding-right: 16px; }
-    .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+  /* JSON / cat */
+  .json-area { width:100%; height:190px; font-family:"Consolas","Monaco",monospace; font-size:12px; line-height:1.6; padding:10px 12px; border:1.5px solid var(--gray-200); border-radius:var(--radius-sm); outline:none; resize:vertical; color:var(--gray-700); }
+  .json-area:focus { border-color:var(--teal); box-shadow:0 0 0 3px rgba(0,150,136,.1); }
+  .cat-list { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+  .cat-item { display:flex; align-items:center; justify-content:space-between; padding:9px 14px; border-radius:var(--radius-sm); border:1px solid var(--gray-200); background:var(--gray-50); }
+  .cat-item span { font-size:14px; color:var(--gray-700); }
+
+  /* Settings modal specifics */
+  .settings-section { margin-bottom:20px; }
+  .settings-section-title { font-size:13px; font-weight:600; color:var(--gray-700); margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid var(--gray-200); }
+  .pat-input-wrap { position:relative; }
+  .pat-input-wrap input { padding-right:40px; }
+  .pat-toggle { position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:var(--gray-400); padding:2px; }
+  .pat-toggle:hover { color:var(--gray-700); }
+  .pat-toggle svg { width:16px; height:16px; }
+  .info-box { background:var(--gray-50); border:1px solid var(--gray-200); border-radius:8px; padding:12px 14px; font-size:12px; color:var(--gray-500); line-height:1.6; }
+  .info-box a { color:var(--teal); text-decoration:none; }
+  .info-box a:hover { text-decoration:underline; }
+  .pat-status { display:flex; align-items:center; gap:6px; font-size:12px; margin-top:8px; }
+  .pat-status.ok { color:var(--teal); }
+  .pat-status.none { color:var(--gray-400); }
+
+  /* Toast */
+  .toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(12px); background:var(--gray-900); color:white; padding:10px 22px; border-radius:10px; font-size:13px; z-index:2000; opacity:0; pointer-events:none; transition:all .25s; box-shadow:0 4px 16px rgba(0,0,0,.25); }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  footer { text-align:center; padding:0 0 28px; font-size:12px; color:var(--gray-300); letter-spacing:.3px; }
+
+  @media (max-width:600px) {
+    header, .hero, .search-float, .tabs-wrap, .section-header, .grid-wrap { padding-left:16px; padding-right:16px; }
+    .grid { grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:12px; }
   }
 </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════
-     LOGIN SCREEN
-════════════════════════════════════════ -->
+<!-- ── LOGIN ── -->
 <div id="login-screen">
-  <!-- Left gradient panel -->
   <div class="login-left">
     <div class="login-brand">
       <div class="login-brand-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
-          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
-        </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       </div>
       <div class="login-brand-title">工具入口</div>
       <div class="login-brand-sub">T O O L &nbsp; H U B</div>
       <div class="login-brand-desc">集中管理 · 一鍵開啟</div>
     </div>
   </div>
-
-  <!-- Right white panel -->
   <div class="login-right">
     <div class="login-logo">
-      <div class="login-logo-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
-          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
-        </svg>
-      </div>
+      <div class="login-logo-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
       <span class="login-logo-name">EUP</span>
     </div>
-
     <div class="login-welcome">歡迎回來</div>
-    <p class="login-hint">
-      請使用公司 Google 帳號<br>
-      <strong>（@eup.com.tw）</strong>登入系統
-    </p>
-
+    <p class="login-hint">請使用公司 Google 帳號<br><strong>（@eup.com.tw）</strong>登入系統</p>
     <div class="g-signin-wrap">
-      <div id="g_id_onload"
-           data-client_id="49182385706-hk1m4hqvlb224df35bbast88kk1baphq.apps.googleusercontent.com"
-           data-callback="handleCredentialResponse"
-           data-auto_select="false">
-      </div>
-      <div class="g_id_signin"
-           data-type="standard"
-           data-size="large"
-           data-theme="outline"
-           data-text="signin_with"
-           data-shape="rectangular"
-           data-logo_alignment="left"
-           data-width="280">
-      </div>
+      <div id="g_id_onload" data-client_id="49182385706-hk1m4hqvlb224df35bbast88kk1baphq.apps.googleusercontent.com" data-callback="handleCredentialResponse" data-auto_select="false"></div>
+      <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="signin_with" data-shape="rectangular" data-logo_alignment="left" data-width="280"></div>
     </div>
-
-    <div class="login-error" id="login-error">
-      ❌ 僅限 @eup.com.tw 帳號存取
-    </div>
-
+    <div class="login-error" id="login-error">❌ 僅限 @eup.com.tw 帳號存取</div>
     <div class="login-footer">工具入口 · 內部系統</div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     MAIN APP
-════════════════════════════════════════ -->
+<!-- ── APP ── -->
 <div id="app">
-
-  <!-- Header -->
   <header>
     <a class="logo" href="#">
-      <div class="logo-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
-          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
-        </svg>
-      </div>
-      <div class="logo-text">
-        <span class="logo-name">EUP</span>
-        <span class="logo-sub">工具入口</span>
-      </div>
+      <div class="logo-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
+      <div class="logo-text"><span class="logo-name">EUP</span><span class="logo-sub">工具入口</span></div>
     </a>
     <div class="header-right">
+      <!-- Settings gear -->
+      <button class="btn btn-ghost btn-icon" id="btnSettings" title="設定" style="padding:7px">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
       <button class="btn btn-outline" id="btnExport">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        匯出
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>匯出
       </button>
       <button class="btn btn-outline" id="btnImport">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        匯入
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>匯入
       </button>
       <button class="btn btn-primary" id="btnAdd">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        新增工具
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>新增工具
       </button>
-      <!-- User chip (populated after login) -->
       <div class="user-chip" id="userChip">
         <div class="user-avatar-fallback" id="userAvatarFallback"></div>
         <span class="user-name" id="userName"></span>
       </div>
       <button class="btn btn-ghost" id="btnLogout" title="登出">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        登出
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>登出
       </button>
     </div>
   </header>
 
-  <!-- Hero -->
   <div class="hero">
     <div class="hero-inner">
       <div class="hero-title">工具入口</div>
@@ -551,7 +306,6 @@
     </div>
   </div>
 
-  <!-- Search -->
   <div class="search-float">
     <div class="search-box">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -559,23 +313,13 @@
     </div>
   </div>
 
-  <!-- Tabs -->
   <div class="tabs-wrap" id="tabsWrap"></div>
-
-  <!-- Section header -->
-  <div class="section-header">
-    <span class="section-count" id="sectionCount"></span>
-  </div>
-
-  <!-- Grid -->
-  <div class="grid-wrap">
-    <div class="grid" id="grid"></div>
-  </div>
-
+  <div class="section-header"><span class="section-count" id="sectionCount"></span></div>
+  <div class="grid-wrap"><div class="grid" id="grid"></div></div>
   <footer>EUP 工具入口 · 內部系統</footer>
 </div>
 
-<!-- ── Modals ── -->
+<!-- ── Modal: Add/Edit Tool ── -->
 <div class="overlay" id="modalTool">
   <div class="modal">
     <div class="modal-head">
@@ -583,10 +327,47 @@
       <button class="modal-close" id="btnToolClose"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
     <div class="field"><label>工具名稱</label><input type="text" id="fName" placeholder="例：資料分析工具"></div>
-    <div class="field"><label>網址</label><input type="url" id="fUrl" placeholder="https://…"></div>
-    <div class="field"><label>描述（選填）</label><textarea id="fDesc" placeholder="這個工具的用途說明…"></textarea></div>
+    <div class="field"><label>描述 <span class="field-optional">選填</span></label><textarea id="fDesc" placeholder="這個工具的用途說明…"></textarea></div>
     <div class="field"><label>分類</label><select id="fCat"></select></div>
     <div class="field"><label>圖示</label><div class="icon-grid" id="iconPicker"></div></div>
+
+    <!-- Web URL -->
+    <div class="field">
+      <label>網頁工具網址 <span class="field-optional">與「專案下載」至少擇一</span></label>
+      <input type="url" id="fUrl" placeholder="https://…">
+    </div>
+
+    <!-- Project download section -->
+    <div class="field">
+      <label>專案下載 <span class="field-optional">供同仁下載到本機使用</span></label>
+      <div class="dl-tabs">
+        <button class="dl-tab active" id="dlTabUrl" onclick="switchDlTab('url')">輸入下載連結</button>
+        <button class="dl-tab" id="dlTabUpload" onclick="switchDlTab('upload')">上傳專案資料夾</button>
+      </div>
+      <!-- Tab: URL -->
+      <div id="dlPanelUrl">
+        <input type="url" id="fDownloadUrl" placeholder="https://… （zip、GitHub Releases 等）">
+      </div>
+      <!-- Tab: Upload -->
+      <div id="dlPanelUpload" style="display:none">
+        <div class="upload-area" id="uploadArea" onclick="document.getElementById('fFolder').click()">
+          <input type="file" id="fFolder" webkitdirectory multiple onchange="onFolderSelected(this)">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          <p id="uploadAreaText">點擊選擇資料夾</p>
+          <div class="hint">選取後將自動壓縮並上傳至 GitHub</div>
+        </div>
+        <div class="progress-wrap" id="progressWrap">
+          <div class="progress-bar-bg"><div class="progress-bar" id="progressBar"></div></div>
+          <div class="progress-label" id="progressLabel">準備中…</div>
+        </div>
+        <div id="dlExisting" style="display:none" class="dl-existing">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span id="dlExistingName"></span>
+          <button onclick="clearDownloadUrl()" title="移除">✕</button>
+        </div>
+      </div>
+    </div>
+
     <div class="modal-foot">
       <button class="btn btn-outline" id="btnToolCancel">取消</button>
       <button class="btn btn-primary" id="btnToolSave">儲存</button>
@@ -594,6 +375,46 @@
   </div>
 </div>
 
+<!-- ── Modal: Settings ── -->
+<div class="overlay" id="modalSettings">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">設定</div>
+      <button class="modal-close" onclick="closeModal('modalSettings')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-section-title">GitHub 上傳設定（用於上傳專案資料夾）</div>
+      <div class="field" style="margin-bottom:8px">
+        <label>Personal Access Token（PAT）</label>
+        <div class="pat-input-wrap">
+          <input type="password" id="fPat" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+          <button class="pat-toggle" id="patToggle" onclick="togglePatVisibility()">
+            <svg id="patEyeIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <div class="pat-status none" id="patStatus">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span id="patStatusText">尚未設定</span>
+        </div>
+      </div>
+      <div class="info-box">
+        <b>如何取得 PAT：</b><br>
+        1. 前往 <a href="https://github.com/settings/tokens/new" target="_blank">GitHub → Settings → Tokens (classic)</a><br>
+        2. 勾選 <code>repo</code> 權限<br>
+        3. 產生後貼到上方欄位<br><br>
+        ⚠ Token 儲存在本機瀏覽器，不會上傳至任何伺服器。
+      </div>
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="clearPat()">清除 Token</button>
+      <button class="btn btn-primary" id="btnSavePat">儲存設定</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: Export ── -->
 <div class="overlay" id="modalExport">
   <div class="modal">
     <div class="modal-head">
@@ -609,6 +430,7 @@
   </div>
 </div>
 
+<!-- ── Modal: Import ── -->
 <div class="overlay" id="modalImport">
   <div class="modal">
     <div class="modal-head">
@@ -625,6 +447,7 @@
   </div>
 </div>
 
+<!-- ── Modal: Category ── -->
 <div class="overlay" id="modalCat">
   <div class="modal">
     <div class="modal-head">
@@ -632,10 +455,7 @@
       <button class="modal-close" onclick="closeModal('modalCat')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
     <div class="cat-list" id="catList"></div>
-    <div class="field" style="margin-bottom:0">
-      <label>新增分類名稱</label>
-      <input type="text" id="fCatName" placeholder="例：行銷工具">
-    </div>
+    <div class="field" style="margin-bottom:0"><label>新增分類名稱</label><input type="text" id="fCatName" placeholder="例：行銷工具"></div>
     <div class="modal-foot">
       <button class="btn btn-outline" onclick="closeModal('modalCat')">關閉</button>
       <button class="btn btn-primary" id="btnCatAdd">新增</button>
@@ -648,110 +468,118 @@
 <script>
 const ALLOWED_DOMAIN = 'eup.com.tw';
 const CLIENT_ID = '49182385706-hk1m4hqvlb224df35bbast88kk1baphq.apps.googleusercontent.com';
-
-// ─── Auth ────────────────────────────────────────────────────────
-function parseJwt(token) {
-  const base64 = token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
-  return JSON.parse(decodeURIComponent(atob(base64).split('').map(c =>
-    '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-  ).join('')));
-}
-
-function handleCredentialResponse(response) {
-  const payload = parseJwt(response.credential);
-  const email = payload.email || '';
-
-  if (!email.endsWith('@' + ALLOWED_DOMAIN)) {
-    document.getElementById('login-error').style.display = 'block';
-    return;
-  }
-
-  // Save session
-  sessionStorage.setItem('eup_user', JSON.stringify({
-    email, name: payload.name, picture: payload.picture
-  }));
-
-  showApp(payload);
-}
-
-function showApp(user) {
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
-
-  // Populate user chip
-  document.getElementById('userName').textContent = user.name || user.email.split('@')[0];
-  const fallback = document.getElementById('userAvatarFallback');
-  if (user.picture) {
-    const img = document.createElement('img');
-    img.src = user.picture;
-    img.className = 'user-avatar';
-    img.alt = user.name;
-    img.onerror = () => { img.replaceWith(fallback); fallback.textContent = (user.name||'U')[0].toUpperCase(); };
-    fallback.parentNode.insertBefore(img, fallback);
-    fallback.remove();
-  } else {
-    fallback.textContent = (user.name||'U')[0].toUpperCase();
-  }
-
-  render();
-}
-
-function logout() {
-  sessionStorage.removeItem('eup_user');
-  // Revoke Google session
-  if (window.google && google.accounts && google.accounts.id) {
-    google.accounts.id.disableAutoSelect();
-  }
-  location.reload();
-}
-
-// Check existing session on load
-window.addEventListener('load', () => {
-  const saved = sessionStorage.getItem('eup_user');
-  if (saved) {
-    try { showApp(JSON.parse(saved)); return; } catch(e) {}
-  }
-  // Init Google Sign-In (fallback if g_id_onload doesn't fire)
-  if (window.google && google.accounts) {
-    google.accounts.id.initialize({ client_id: CLIENT_ID, callback: handleCredentialResponse });
-    google.accounts.id.renderButton(document.querySelector('.g_id_signin'), {
-      type: 'standard', size: 'large', theme: 'outline',
-      text: 'signin_with', shape: 'rectangular', logo_alignment: 'left', width: 280
-    });
-  }
-});
-
-document.getElementById('btnLogout').addEventListener('click', logout);
-
-// ─── Data ────────────────────────────────────────────────────────
+const GH_REPO = 'homejay-eup/tool-hub';
 const ICONS = ["🔧","📄","📊","📝","🖼️","📋","📈","🗂️","🔍","⚙️","🚀","💡","🎯","📌","🔐","📧","🌐","🖥️","📱","🗃️","✅","📤","📥","🔗","🧮","📆","💬","🧩","📂","🖨️","🔔","📣"];
+
 const DEFAULT = {
   categories: ["全部","文件處理","資料分析","行政作業","其他"],
   tools: [
-    {id:1,name:"PDF 合併工具",  url:"https://example.com/pdf-merge",     desc:"快速合併多份 PDF 文件",         category:"文件處理",icon:"📄"},
-    {id:2,name:"Excel 資料清洗",url:"https://example.com/excel-clean",   desc:"自動整理與清洗 Excel 資料",     category:"資料分析",icon:"📊"},
-    {id:3,name:"會議記錄產生器",url:"https://example.com/meeting-notes", desc:"輸入重點自動產生正式會議記錄", category:"行政作業",icon:"📝"},
-    {id:4,name:"圖片壓縮工具",  url:"https://example.com/img-compress",  desc:"批次壓縮圖片，降低檔案大小",   category:"文件處理",icon:"🖼️"},
-    {id:5,name:"表單產生器",    url:"https://example.com/form-builder",  desc:"快速建立線上問卷與表單",       category:"行政作業",icon:"📋"},
-    {id:6,name:"資料視覺化",    url:"https://example.com/chart",         desc:"上傳資料自動產生圖表",         category:"資料分析",icon:"📈"},
+    {id:1,name:"PDF 合併工具",  url:"https://example.com/pdf-merge",     desc:"快速合併多份 PDF 文件",         category:"文件處理",icon:"📄",downloadUrl:""},
+    {id:2,name:"Excel 資料清洗",url:"https://example.com/excel-clean",   desc:"自動整理與清洗 Excel 資料",     category:"資料分析",icon:"📊",downloadUrl:""},
+    {id:3,name:"會議記錄產生器",url:"https://example.com/meeting-notes", desc:"輸入重點自動產生正式會議記錄", category:"行政作業",icon:"📝",downloadUrl:""},
+    {id:4,name:"圖片壓縮工具",  url:"https://example.com/img-compress",  desc:"批次壓縮圖片，降低檔案大小",   category:"文件處理",icon:"🖼️",downloadUrl:""},
+    {id:5,name:"表單產生器",    url:"https://example.com/form-builder",  desc:"快速建立線上問卷與表單",       category:"行政作業",icon:"📋",downloadUrl:""},
+    {id:6,name:"資料視覺化",    url:"https://example.com/chart",         desc:"上傳資料自動產生圖表",         category:"資料分析",icon:"📈",downloadUrl:""},
   ]
 };
 
+// ─── State ──────────────────────────────────────────────────────
 let data = loadData();
 let activeCategory = "全部";
 let searchQuery = "";
 let editingId = null;
 let selectedIcon = "🔧";
+let pendingDownloadUrl = ""; // temp during upload flow
+let dlTabMode = "url"; // 'url' | 'upload'
 
 function loadData() {
-  try { const r = localStorage.getItem("eup_toolhub"); if(r) return JSON.parse(r); } catch(e){}
+  try { const r=localStorage.getItem("eup_toolhub"); if(r) return JSON.parse(r); } catch(e){}
   return JSON.parse(JSON.stringify(DEFAULT));
 }
 function saveData() { localStorage.setItem("eup_toolhub", JSON.stringify(data)); }
 function nextId() { return data.tools.length ? Math.max(...data.tools.map(t=>t.id))+1 : 1; }
 function esc(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
 
-// ─── Render ──────────────────────────────────────────────────────
+// ─── Settings (PAT) ─────────────────────────────────────────────
+function loadSettings() { try { return JSON.parse(localStorage.getItem("eup_settings")||"{}"); } catch(e){ return {}; } }
+function saveSettings(s) { localStorage.setItem("eup_settings", JSON.stringify(s)); }
+
+function openSettings() {
+  const s = loadSettings();
+  document.getElementById("fPat").value = s.githubToken || "";
+  updatePatStatus(s.githubToken);
+  openModal("modalSettings");
+}
+function updatePatStatus(token) {
+  const el = document.getElementById("patStatus");
+  const txt = document.getElementById("patStatusText");
+  if (token && token.length > 10) {
+    el.className = "pat-status ok";
+    txt.textContent = "已設定 (" + token.slice(0,6) + "…" + token.slice(-4) + ")";
+  } else {
+    el.className = "pat-status none";
+    txt.textContent = "尚未設定";
+  }
+}
+function togglePatVisibility() {
+  const inp = document.getElementById("fPat");
+  inp.type = inp.type === "password" ? "text" : "password";
+}
+function clearPat() {
+  const s = loadSettings(); delete s.githubToken; saveSettings(s);
+  document.getElementById("fPat").value = "";
+  updatePatStatus("");
+  toast("已清除 Token");
+}
+document.getElementById("btnSavePat").addEventListener("click", () => {
+  const token = document.getElementById("fPat").value.trim();
+  const s = loadSettings(); s.githubToken = token; saveSettings(s);
+  updatePatStatus(token);
+  toast("設定已儲存");
+  closeModal("modalSettings");
+});
+document.getElementById("btnSettings").addEventListener("click", openSettings);
+
+// ─── Auth ────────────────────────────────────────────────────────
+function parseJwt(token) {
+  const b = token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
+  return JSON.parse(decodeURIComponent(atob(b).split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+}
+function handleCredentialResponse(response) {
+  const payload = parseJwt(response.credential);
+  const email = payload.email || '';
+  if (!email.endsWith('@' + ALLOWED_DOMAIN)) { document.getElementById('login-error').style.display='block'; return; }
+  sessionStorage.setItem('eup_user', JSON.stringify({email, name:payload.name, picture:payload.picture}));
+  showApp(payload);
+}
+function showApp(user) {
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('userName').textContent = user.name || user.email.split('@')[0];
+  const fallback = document.getElementById('userAvatarFallback');
+  if (user.picture) {
+    const img = document.createElement('img'); img.src=user.picture; img.className='user-avatar'; img.alt=user.name;
+    img.onerror=()=>{ img.replaceWith(fallback); fallback.textContent=(user.name||'U')[0].toUpperCase(); };
+    fallback.parentNode.insertBefore(img, fallback); fallback.remove();
+  } else { fallback.textContent=(user.name||'U')[0].toUpperCase(); }
+  render();
+}
+function logout() {
+  sessionStorage.removeItem('eup_user');
+  if (window.google&&google.accounts&&google.accounts.id) google.accounts.id.disableAutoSelect();
+  location.reload();
+}
+window.addEventListener('load', () => {
+  const saved = sessionStorage.getItem('eup_user');
+  if (saved) { try { showApp(JSON.parse(saved)); return; } catch(e){} }
+  if (window.google&&google.accounts) {
+    google.accounts.id.initialize({client_id:CLIENT_ID, callback:handleCredentialResponse});
+    google.accounts.id.renderButton(document.querySelector('.g_id_signin'), {type:'standard',size:'large',theme:'outline',text:'signin_with',shape:'rectangular',logo_alignment:'left',width:280});
+  }
+});
+document.getElementById('btnLogout').addEventListener('click', logout);
+
+// ─── Render ─────────────────────────────────────────────────────
 function render() { renderTabs(); renderGrid(); }
 
 function renderTabs() {
@@ -760,25 +588,25 @@ function renderTabs() {
     cats.map(c=>{
       const n = c==="全部" ? data.tools.length : data.tools.filter(t=>t.category===c).length;
       return `<button class="tab ${c===activeCategory?"active":""}" onclick="setCategory('${esc(c)}')">${esc(c)}<span class="badge">${n}</span></button>`;
-    }).join("") +
-    `<button class="tab-add" onclick="openCatModal()">＋ 新增分類</button>`;
+    }).join("") + `<button class="tab-add" onclick="openCatModal()">＋ 新增分類</button>`;
 }
 
 function renderGrid() {
   let tools = data.tools;
   if (activeCategory !== "全部") tools = tools.filter(t=>t.category===activeCategory);
-  if (searchQuery) {
-    const q = searchQuery.toLowerCase();
-    tools = tools.filter(t=>t.name.toLowerCase().includes(q)||t.desc.toLowerCase().includes(q));
-  }
+  if (searchQuery) { const q=searchQuery.toLowerCase(); tools=tools.filter(t=>t.name.toLowerCase().includes(q)||t.desc.toLowerCase().includes(q)); }
   document.getElementById("sectionCount").textContent = `共 ${tools.length} 個工具`;
   if (!tools.length) {
     document.getElementById("grid").innerHTML = `<div class="empty"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><h3>尚無工具</h3><p>點擊右上角「新增工具」開始建立</p></div>`;
     return;
   }
-  document.getElementById("grid").innerHTML = tools.map(t=>`
-    <div class="card">
-      <a class="card-link" href="${esc(t.url)}" target="_blank" rel="noopener">
+  document.getElementById("grid").innerHTML = tools.map(t => {
+    const hasUrl = t.url && t.url.trim();
+    const hasDl  = t.downloadUrl && t.downloadUrl.trim();
+    const mainHref = hasUrl ? esc(t.url) : (hasDl ? esc(t.downloadUrl) : '#');
+    const mainTarget = hasUrl ? '_blank' : (hasDl ? '_blank' : '');
+    return `<div class="card">
+      <a class="card-link" href="${mainHref}" ${mainTarget?'target="'+mainTarget+'"':''} rel="noopener">
         <div class="card-icon">${t.icon||"🔧"}</div>
         <div class="card-title">${esc(t.name)}</div>
         <div class="card-desc">${esc(t.desc||"")}</div>
@@ -787,25 +615,29 @@ function renderGrid() {
           <span class="card-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
         </div>
       </a>
+      ${hasDl ? `<div class="card-dl-bar">
+        <a class="card-dl-btn" href="${esc(t.downloadUrl)}" target="_blank" rel="noopener" download>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          下載專案
+        </a>
+      </div>` : ''}
       <div class="card-actions">
         <button class="btn btn-ghost" onclick="editTool(${t.id})"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>編輯</button>
         <button class="btn btn-ghost" style="color:#EF5350" onclick="deleteTool(${t.id})"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>刪除</button>
       </div>
-    </div>`).join("");
+    </div>`;
+  }).join("");
 }
 
 // ─── Category ────────────────────────────────────────────────────
 function setCategory(c) { activeCategory=c; render(); }
-
 function openCatModal() { renderCatList(); document.getElementById("fCatName").value=""; openModal("modalCat"); }
-
 function renderCatList() {
   const cats = data.categories.filter(c=>c!=="全部");
   document.getElementById("catList").innerHTML = cats.length ?
     cats.map(c=>`<div class="cat-item"><span>${esc(c)}</span><button class="btn btn-ghost" style="color:#EF5350;padding:4px 8px;border-radius:6px" onclick="deleteCategory('${esc(c)}')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>`).join("") :
     '<p style="font-size:13px;color:var(--gray-300);text-align:center;padding:8px 0">尚無自訂分類</p>';
 }
-
 document.getElementById("btnCatAdd").addEventListener("click",()=>{
   const name=document.getElementById("fCatName").value.trim();
   if(!name){toast("請輸入分類名稱");return;}
@@ -813,9 +645,8 @@ document.getElementById("btnCatAdd").addEventListener("click",()=>{
   data.categories.push(name); saveData(); render(); renderCatList();
   document.getElementById("fCatName").value=""; toast(`已新增分類「${name}」`);
 });
-
 function deleteCategory(cat) {
-  if(data.tools.filter(t=>t.category===cat).length>0){toast(`此分類下有工具，請先移除或改分類`);return;}
+  if(data.tools.filter(t=>t.category===cat).length>0){toast("此分類下有工具，請先移除或改分類");return;}
   data.categories=data.categories.filter(c=>c!==cat);
   if(activeCategory===cat) activeCategory="全部";
   saveData(); render(); renderCatList(); toast(`已刪除分類「${cat}」`);
@@ -823,43 +654,52 @@ function deleteCategory(cat) {
 
 // ─── Tool CRUD ───────────────────────────────────────────────────
 function openAddModal() {
-  editingId=null; document.getElementById("modalToolTitle").textContent="新增工具";
-  ["fName","fUrl","fDesc"].forEach(id=>document.getElementById(id).value="");
-  selectedIcon="🔧"; buildCatSelect(); buildIconPicker(); openModal("modalTool");
+  editingId=null;
+  document.getElementById("modalToolTitle").textContent="新增工具";
+  ["fName","fUrl","fDesc","fDownloadUrl"].forEach(id=>document.getElementById(id).value="");
+  selectedIcon="🔧"; pendingDownloadUrl="";
+  buildCatSelect(); buildIconPicker();
+  resetUploadArea(); switchDlTab("url");
+  openModal("modalTool");
 }
-
 function editTool(id) {
   const t=data.tools.find(x=>x.id===id); if(!t) return;
-  editingId=id; document.getElementById("modalToolTitle").textContent="編輯工具";
+  editingId=id;
+  document.getElementById("modalToolTitle").textContent="編輯工具";
   document.getElementById("fName").value=t.name;
-  document.getElementById("fUrl").value=t.url;
+  document.getElementById("fUrl").value=t.url||"";
   document.getElementById("fDesc").value=t.desc||"";
-  selectedIcon=t.icon||"🔧"; buildCatSelect(t.category); buildIconPicker(); openModal("modalTool");
+  document.getElementById("fDownloadUrl").value=t.downloadUrl||"";
+  selectedIcon=t.icon||"🔧";
+  pendingDownloadUrl=t.downloadUrl||"";
+  buildCatSelect(t.category); buildIconPicker();
+  resetUploadArea();
+  if (t.downloadUrl) { showDlExisting(t.downloadUrl); switchDlTab("upload"); } else { switchDlTab("url"); }
+  openModal("modalTool");
 }
-
 function deleteTool(id) {
   const t=data.tools.find(x=>x.id===id); if(!t) return;
   if(!confirm(`確定要刪除「${t.name}」？`)) return;
   data.tools=data.tools.filter(x=>x.id!==id); saveData(); render(); toast(`已刪除「${t.name}」`);
 }
-
 document.getElementById("btnToolSave").addEventListener("click",()=>{
   const name=document.getElementById("fName").value.trim();
   const url=document.getElementById("fUrl").value.trim();
   const desc=document.getElementById("fDesc").value.trim();
   const cat=document.getElementById("fCat").value;
+  // Resolve download URL
+  let downloadUrl = pendingDownloadUrl || document.getElementById("fDownloadUrl").value.trim();
   if(!name){toast("請輸入工具名稱");return;}
-  if(!url){toast("請輸入網址");return;}
+  if(!url && !downloadUrl){toast("請填入網頁網址或上傳專案");return;}
   if(editingId){
-    Object.assign(data.tools.find(x=>x.id===editingId),{name,url,desc,category:cat,icon:selectedIcon});
+    Object.assign(data.tools.find(x=>x.id===editingId),{name,url,desc,category:cat,icon:selectedIcon,downloadUrl});
     toast(`已更新「${name}」`);
   } else {
-    data.tools.push({id:nextId(),name,url,desc,category:cat,icon:selectedIcon});
+    data.tools.push({id:nextId(),name,url,desc,category:cat,icon:selectedIcon,downloadUrl});
     toast(`已新增「${name}」`);
   }
   saveData(); render(); closeModal("modalTool");
 });
-
 function buildCatSelect(selected) {
   const cats=data.categories.filter(c=>c!=="全部");
   document.getElementById("fCat").innerHTML = cats.length ?
@@ -867,10 +707,136 @@ function buildCatSelect(selected) {
     '<option value="">請先新增分類</option>';
 }
 function buildIconPicker() {
-  document.getElementById("iconPicker").innerHTML =
-    ICONS.map(ic=>`<div class="icon-opt${ic===selectedIcon?" selected":""}" onclick="pickIcon('${ic}')">${ic}</div>`).join("");
+  document.getElementById("iconPicker").innerHTML = ICONS.map(ic=>`<div class="icon-opt${ic===selectedIcon?" selected":""}" onclick="pickIcon('${ic}')">${ic}</div>`).join("");
 }
 function pickIcon(ic) { selectedIcon=ic; buildIconPicker(); }
+
+// ─── Download tab ────────────────────────────────────────────────
+function switchDlTab(mode) {
+  dlTabMode = mode;
+  document.getElementById("dlTabUrl").className    = "dl-tab" + (mode==="url" ? " active" : "");
+  document.getElementById("dlTabUpload").className = "dl-tab" + (mode==="upload" ? " active" : "");
+  document.getElementById("dlPanelUrl").style.display    = mode==="url" ? "" : "none";
+  document.getElementById("dlPanelUpload").style.display = mode==="upload" ? "" : "none";
+}
+
+function resetUploadArea() {
+  document.getElementById("uploadAreaText").textContent = "點擊選擇資料夾";
+  document.getElementById("uploadArea").classList.remove("has-files");
+  document.getElementById("progressWrap").classList.remove("show");
+  document.getElementById("dlExisting").style.display = "none";
+  document.getElementById("fFolder").value = "";
+  pendingDownloadUrl = "";
+}
+
+function showDlExisting(url) {
+  const name = url.split('/').pop() || url;
+  document.getElementById("dlExistingName").textContent = name;
+  document.getElementById("dlExisting").style.display = "flex";
+}
+
+function clearDownloadUrl() {
+  pendingDownloadUrl = "";
+  document.getElementById("dlExisting").style.display = "none";
+  resetUploadArea();
+}
+
+async function onFolderSelected(input) {
+  const files = Array.from(input.files);
+  if (!files.length) return;
+
+  const settings = loadSettings();
+  if (!settings.githubToken) {
+    toast("請先在「設定」中填入 GitHub Token");
+    closeModal("modalTool");
+    openSettings();
+    return;
+  }
+
+  const folderName = files[0].webkitRelativePath.split('/')[0] || "project";
+  document.getElementById("uploadAreaText").textContent = `已選取：${folderName}（${files.length} 個檔案）`;
+  document.getElementById("uploadArea").classList.add("has-files");
+
+  const progressWrap = document.getElementById("progressWrap");
+  const progressBar  = document.getElementById("progressBar");
+  const progressLabel= document.getElementById("progressLabel");
+  progressWrap.classList.add("show");
+
+  try {
+    // Step 1: Zip
+    progressLabel.textContent = "壓縮中…"; progressBar.style.width = "15%";
+    const zipBlob = await zipFolder(files, folderName);
+
+    // Step 2: Upload to GitHub Releases
+    progressLabel.textContent = "建立 Release…"; progressBar.style.width = "40%";
+    const toolName = document.getElementById("fName").value.trim() || folderName;
+    const downloadUrl = await uploadToGitHubRelease(toolName, folderName, zipBlob, settings.githubToken, (p) => {
+      progressBar.style.width = (40 + p * 55) + "%";
+      progressLabel.textContent = `上傳中… ${Math.round(p*100)}%`;
+    });
+
+    progressBar.style.width = "100%";
+    progressLabel.textContent = "上傳完成！";
+    pendingDownloadUrl = downloadUrl;
+    showDlExisting(downloadUrl);
+    toast("專案上傳成功");
+
+  } catch(e) {
+    progressBar.style.width = "0%";
+    progressLabel.textContent = "上傳失敗：" + e.message;
+    toast("上傳失敗：" + e.message);
+    console.error(e);
+  }
+}
+
+async function zipFolder(files, folderName) {
+  const zip = new JSZip();
+  const folder = zip.folder(folderName);
+  for (const file of files) {
+    const parts = file.webkitRelativePath.split('/');
+    const relativePath = parts.slice(1).join('/');  // remove top folder name
+    folder.file(relativePath, file);
+  }
+  return await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
+}
+
+async function uploadToGitHubRelease(toolName, folderName, zipBlob, token, onProgress) {
+  const headers = { 'Authorization': `token ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github+json' };
+  const tag = `project-${folderName.replace(/[^a-zA-Z0-9-_]/g,'_')}-${Date.now()}`;
+  const fileName = `${folderName}.zip`;
+
+  // 1. Create release
+  const relRes = await fetch(`https://api.github.com/repos/${GH_REPO}/releases`, {
+    method: 'POST', headers,
+    body: JSON.stringify({ tag_name: tag, name: `${toolName} 專案`, body: `由 EUP 工具入口自動上傳`, draft: false, prerelease: false })
+  });
+  if (!relRes.ok) {
+    const err = await relRes.json().catch(()=>({}));
+    throw new Error(err.message || `建立 Release 失敗 (${relRes.status})`);
+  }
+  const release = await relRes.json();
+  onProgress && onProgress(0.05);
+
+  // 2. Upload asset via XHR for progress
+  const uploadUrl = `https://uploads.github.com/repos/${GH_REPO}/releases/${release.id}/assets?name=${encodeURIComponent(fileName)}`;
+  return await new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', uploadUrl);
+    xhr.setRequestHeader('Authorization', `token ${token}`);
+    xhr.setRequestHeader('Content-Type', 'application/zip');
+    xhr.upload.onprogress = e => { if(e.lengthComputable) onProgress && onProgress(e.loaded/e.total); };
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        const asset = JSON.parse(xhr.responseText);
+        resolve(asset.browser_download_url);
+      } else {
+        reject(new Error(`上傳失敗 (${xhr.status})`));
+      }
+    };
+    xhr.onerror = () => reject(new Error("網路錯誤"));
+    xhr.send(zipBlob);
+  });
+}
 
 // ─── Export / Import ─────────────────────────────────────────────
 document.getElementById("btnExport").addEventListener("click",()=>{
@@ -895,10 +861,9 @@ document.getElementById("btnImportConfirm").addEventListener("click",()=>{
   } catch(e){ toast("JSON 格式錯誤，請確認後再試"); }
 });
 
-// ─── Modal helpers ───────────────────────────────────────────────
+// ─── Modal helpers ────────────────────────────────────────────────
 function openModal(id)  { document.getElementById(id).classList.add("open"); }
 function closeModal(id) { document.getElementById(id).classList.remove("open"); }
-
 document.getElementById("btnAdd").addEventListener("click", openAddModal);
 document.getElementById("btnToolCancel").addEventListener("click",()=>closeModal("modalTool"));
 document.getElementById("btnToolClose").addEventListener("click", ()=>closeModal("modalTool"));
@@ -907,16 +872,17 @@ document.querySelectorAll(".overlay").forEach(el=>
 );
 
 // ─── Search ──────────────────────────────────────────────────────
-document.getElementById("searchInput").addEventListener("input", e=>{
-  searchQuery=e.target.value.trim(); render();
-});
+document.getElementById("searchInput").addEventListener("input", e=>{ searchQuery=e.target.value.trim(); render(); });
 
 // ─── Toast ───────────────────────────────────────────────────────
 function toast(msg) {
   const el=document.getElementById("toast");
   el.textContent=msg; el.classList.add("show");
-  clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove("show"),2600);
+  clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove("show"),2800);
 }
+
+// ─── Init ─────────────────────────────────────────────────────────
+render();
 </script>
 </body>
 </html>
