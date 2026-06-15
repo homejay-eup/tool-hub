@@ -205,6 +205,20 @@
   .dl-existing button { border:none; background:transparent; cursor:pointer; color:var(--gray-400); padding:2px; font-size:16px; line-height:1; }
   .dl-existing button:hover { color:#EF5350; }
 
+  /* Upload preview */
+  .upload-preview { margin-top:10px; }
+  .preview-stats { display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
+  .preview-stat { font-size:12px; color:var(--gray-500); background:var(--gray-100); padding:4px 10px; border-radius:6px; }
+  .preview-stat.warn { background:#FFF3E0; color:#E65100; }
+  .preview-excluded { font-size:11px; color:var(--gray-400); margin-bottom:6px; }
+  .preview-warn-box { font-size:12px; color:#B71C1C; background:#FFEBEE; padding:8px 12px; border-radius:7px; margin-bottom:8px; line-height:1.6; }
+  .preview-warn-box b { display:block; margin-bottom:2px; }
+  .preview-file-list { max-height:130px; overflow-y:auto; border:1px solid var(--gray-200); border-radius:8px; background:var(--gray-50); scrollbar-width:thin; margin-bottom:10px; }
+  .preview-file-item { font-size:11px; color:var(--gray-500); padding:4px 10px; border-bottom:1px solid var(--gray-100); font-family:"Consolas","Monaco",monospace; }
+  .preview-file-item:last-child { border-bottom:none; }
+  .preview-file-more { font-size:11px; color:var(--gray-400); padding:6px 10px; text-align:center; font-style:italic; }
+  .preview-confirm-btn { width:100%; }
+
   /* JSON / cat */
   .json-area { width:100%; height:190px; font-family:"Consolas","Monaco",monospace; font-size:12px; line-height:1.6; padding:10px 12px; border:1.5px solid var(--gray-200); border-radius:var(--radius-sm); outline:none; resize:vertical; color:var(--gray-700); }
   .json-area:focus { border-color:var(--teal); box-shadow:0 0 0 3px rgba(0,150,136,.1); }
@@ -364,6 +378,16 @@
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           <span id="dlExistingName"></span>
           <button onclick="clearDownloadUrl()" title="移除">✕</button>
+        </div>
+        <!-- Upload preview (shown after folder selected, before upload) -->
+        <div id="uploadPreview" style="display:none" class="upload-preview">
+          <div id="previewStats" class="preview-stats"></div>
+          <div id="previewWarnings"></div>
+          <div id="previewList" class="preview-file-list"></div>
+          <button class="btn btn-primary preview-confirm-btn" id="btnConfirmUpload" onclick="startUpload()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            確認上傳
+          </button>
         </div>
       </div>
     </div>
@@ -725,8 +749,11 @@ function resetUploadArea() {
   document.getElementById("uploadArea").classList.remove("has-files");
   document.getElementById("progressWrap").classList.remove("show");
   document.getElementById("dlExisting").style.display = "none";
+  document.getElementById("uploadPreview").style.display = "none";
   document.getElementById("fFolder").value = "";
   pendingDownloadUrl = "";
+  pendingFilteredFiles = [];
+  pendingFolderName = "";
 }
 
 function showDlExisting(url) {
@@ -741,9 +768,55 @@ function clearDownloadUrl() {
   resetUploadArea();
 }
 
-async function onFolderSelected(input) {
-  const files = Array.from(input.files);
-  if (!files.length) return;
+// ─── Exclude patterns ────────────────────────────────────────────
+const EXCLUDE_DIRS = new Set([
+  'node_modules','.git','.svn','.hg',
+  '__pycache__','venv','.venv','env','.env',
+  'dist','build','.next','.nuxt','out',
+  '.cache','.parcel-cache','.turbo',
+  'coverage','.nyc_output',
+  '.DS_Store','Thumbs.db',
+]);
+const EXCLUDE_EXTS = new Set([
+  '.pyc','.pyo','.class','.o','.obj',
+  '.exe','.dll','.so','.dylib',
+  '.log','.tmp','.temp','.swp',
+]);
+const SENSITIVE_NAMES = new Set([
+  '.env','.env.local','.env.production','.env.development',
+  'secrets.json','credentials.json','service-account.json',
+  'id_rsa','id_rsa.pub','id_ed25519',
+]);
+
+function filterFiles(allFiles) {
+  const included = [], excluded = [], sensitive = [];
+  for (const f of allFiles) {
+    const parts = f.webkitRelativePath.split('/');
+    const baseName = parts[parts.length - 1];
+    const ext = baseName.includes('.') ? '.' + baseName.split('.').pop().toLowerCase() : '';
+
+    // Check if any path segment is an excluded directory
+    const inExcludedDir = parts.slice(1, -1).some(seg => EXCLUDE_DIRS.has(seg));
+    if (inExcludedDir || EXCLUDE_DIRS.has(baseName)) { excluded.push(f); continue; }
+    if (EXCLUDE_EXTS.has(ext)) { excluded.push(f); continue; }
+    if (SENSITIVE_NAMES.has(baseName.toLowerCase())) { sensitive.push(f); continue; }
+    included.push(f);
+  }
+  return { included, excluded, sensitive };
+}
+
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/1024/1024).toFixed(1) + ' MB';
+}
+
+let pendingFilteredFiles = [];
+let pendingFolderName = "";
+
+function onFolderSelected(input) {
+  const allFiles = Array.from(input.files);
+  if (!allFiles.length) return;
 
   const settings = loadSettings();
   if (!settings.githubToken) {
@@ -753,38 +826,83 @@ async function onFolderSelected(input) {
     return;
   }
 
-  const folderName = files[0].webkitRelativePath.split('/')[0] || "project";
-  document.getElementById("uploadAreaText").textContent = `已選取：${folderName}（${files.length} 個檔案）`;
+  const folderName = allFiles[0].webkitRelativePath.split('/')[0] || "project";
+  const { included, excluded, sensitive } = filterFiles(allFiles);
+  const totalSize = included.reduce((s, f) => s + f.size, 0);
+
+  pendingFilteredFiles = included;
+  pendingFolderName = folderName;
+
+  // Update upload area label
+  document.getElementById("uploadAreaText").textContent = `已選取：${folderName}`;
   document.getElementById("uploadArea").classList.add("has-files");
 
-  const progressWrap = document.getElementById("progressWrap");
-  const progressBar  = document.getElementById("progressBar");
-  const progressLabel= document.getElementById("progressLabel");
+  // Build stats
+  const statsEl = document.getElementById("previewStats");
+  statsEl.innerHTML =
+    `<span class="preview-stat">${included.length} 個檔案將打包</span>` +
+    `<span class="preview-stat">壓縮前約 ${formatSize(totalSize)}</span>` +
+    (excluded.length ? `<span class="preview-stat">已排除 ${excluded.length} 個（node_modules 等）</span>` : '');
+
+  // Warnings for sensitive files
+  const warnEl = document.getElementById("previewWarnings");
+  if (sensitive.length) {
+    warnEl.innerHTML = `<div class="preview-warn-box">
+      <b>⚠️ 偵測到可能含有機密的檔案，已自動排除：</b>
+      ${sensitive.map(f => f.webkitRelativePath.split('/').slice(1).join('/')).map(n => `<code>${n}</code>`).join('、')}
+    </div>`;
+  } else {
+    warnEl.innerHTML = '';
+  }
+
+  // File list preview (max 50 shown)
+  const listEl = document.getElementById("previewList");
+  const SHOW_MAX = 50;
+  listEl.innerHTML = included.slice(0, SHOW_MAX).map(f => {
+    const rel = f.webkitRelativePath.split('/').slice(1).join('/');
+    return `<div class="preview-file-item">${rel} <span style="color:var(--gray-300);float:right">${formatSize(f.size)}</span></div>`;
+  }).join('') + (included.length > SHOW_MAX ?
+    `<div class="preview-file-more">…還有 ${included.length - SHOW_MAX} 個檔案</div>` : '');
+
+  document.getElementById("uploadPreview").style.display = "block";
+  document.getElementById("progressWrap").classList.remove("show");
+}
+
+async function startUpload() {
+  if (!pendingFilteredFiles.length) { toast("沒有可上傳的檔案"); return; }
+  const settings = loadSettings();
+  if (!settings.githubToken) { toast("請先設定 GitHub Token"); return; }
+
+  document.getElementById("uploadPreview").style.display = "none";
+  document.getElementById("btnConfirmUpload").disabled = true;
+
+  const progressWrap  = document.getElementById("progressWrap");
+  const progressBar   = document.getElementById("progressBar");
+  const progressLabel = document.getElementById("progressLabel");
   progressWrap.classList.add("show");
 
   try {
-    // Step 1: Zip
     progressLabel.textContent = "壓縮中…"; progressBar.style.width = "15%";
-    const zipBlob = await zipFolder(files, folderName);
+    const zipBlob = await zipFolder(pendingFilteredFiles, pendingFolderName);
 
-    // Step 2: Upload to GitHub Releases
     progressLabel.textContent = "建立 Release…"; progressBar.style.width = "40%";
-    const toolName = document.getElementById("fName").value.trim() || folderName;
-    const downloadUrl = await uploadToGitHubRelease(toolName, folderName, zipBlob, settings.githubToken, (p) => {
+    const toolName = document.getElementById("fName").value.trim() || pendingFolderName;
+    const downloadUrl = await uploadToGitHubRelease(toolName, pendingFolderName, zipBlob, settings.githubToken, (p) => {
       progressBar.style.width = (40 + p * 55) + "%";
-      progressLabel.textContent = `上傳中… ${Math.round(p*100)}%`;
+      progressLabel.textContent = `上傳中… ${Math.round(p * 100)}%`;
     });
 
     progressBar.style.width = "100%";
-    progressLabel.textContent = "上傳完成！";
+    progressLabel.textContent = `上傳完成！（${formatSize(zipBlob.size)}）`;
     pendingDownloadUrl = downloadUrl;
     showDlExisting(downloadUrl);
-    toast("專案上傳成功");
-
+    toast("專案上傳成功 🎉");
   } catch(e) {
     progressBar.style.width = "0%";
     progressLabel.textContent = "上傳失敗：" + e.message;
     toast("上傳失敗：" + e.message);
+    document.getElementById("btnConfirmUpload").disabled = false;
+    document.getElementById("uploadPreview").style.display = "block";
     console.error(e);
   }
 }
@@ -794,7 +912,7 @@ async function zipFolder(files, folderName) {
   const folder = zip.folder(folderName);
   for (const file of files) {
     const parts = file.webkitRelativePath.split('/');
-    const relativePath = parts.slice(1).join('/');  // remove top folder name
+    const relativePath = parts.slice(1).join('/');
     folder.file(relativePath, file);
   }
   return await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
