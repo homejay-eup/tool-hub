@@ -6,6 +6,7 @@
 <title>EUP 工具入口</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 <style>
   :root {
     --teal-dark:  #00796B;
@@ -173,9 +174,9 @@
 
   /* Icon picker */
   .icon-grid { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
-  .icon-opt { width:38px; height:38px; border-radius:9px; border:1.5px solid var(--gray-200); font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .12s; background:white; }
-  .icon-opt:hover { border-color:var(--teal-light); background:var(--teal-pale); }
-  .icon-opt.selected { border-color:var(--teal); background:var(--teal-pale); box-shadow:0 0 0 2px rgba(0,150,136,.25); }
+  .icon-opt { width:38px; height:38px; border-radius:9px; border:1.5px solid var(--gray-200); font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .12s; background:white; color:var(--gray-500); }
+  .icon-opt:hover { border-color:var(--teal-light); background:var(--teal-pale); color:var(--teal); }
+  .icon-opt.selected { border-color:var(--teal); background:var(--teal-pale); color:var(--teal); box-shadow:0 0 0 2px rgba(0,150,136,.25); }
 
   /* Download section in tool modal */
   .dl-tabs { display:flex; gap:4px; margin-bottom:10px; }
@@ -502,7 +503,18 @@ const ALLOWED_DOMAIN = 'eup.com.tw';
 const CLIENT_ID = '49182385706-hk1m4hqvlb224df35bbast88kk1baphq.apps.googleusercontent.com';
 const GH_REPO = 'homejay-eup/tool-hub';
 const SHARED_GH_TOKEN = ''; // ← 管理員在此填入共用 Token，同仁無需自行設定
-const ICONS = ["🔧","📄","📊","📝","🖼️","📋","📈","🗂️","🔍","⚙️","🚀","💡","🎯","📌","🔐","📧","🌐","🖥️","📱","🗃️","✅","📤","📥","🔗","🧮","📆","💬","🧩","📂","🖨️","🔔","📣"];
+const ICONS = [
+  "tool","file-text","chart-bar","edit","photo","clipboard","chart-line","archive",
+  "search","settings","rocket","bulb","target","pin","lock","mail",
+  "world","device-desktop","device-mobile","database","check","upload","download","link",
+  "calculator","calendar","message","puzzle","folder","printer","bell","speakerphone",
+  "users","briefcase","code","robot","table","map","refresh","cpu"
+];
+function renderIcon(icon) {
+  if (!icon) return '<i class="ti ti-tool" aria-hidden="true"></i>';
+  if ([...icon].some(c => c.codePointAt(0) > 127)) return icon;
+  return `<i class="ti ti-${icon}" aria-hidden="true"></i>`;
+}
 
 const DEFAULT = {
   categories: ["全部","文件處理","資料分析","行政作業","其他"],
@@ -521,7 +533,7 @@ let data = loadData();
 let activeCategory = "全部";
 let searchQuery = "";
 let editingId = null;
-let selectedIcon = "🔧";
+let selectedIcon = "tool";
 let pendingDownloadUrl = ""; // temp during upload flow
 let dlTabMode = "url"; // 'url' | 'upload'
 
@@ -654,7 +666,7 @@ function renderGrid() {
     const mainTarget = hasUrl ? '_blank' : (hasDl ? '_blank' : '');
     return `<div class="card">
       <a class="card-link" href="${mainHref}" ${mainTarget?'target="'+mainTarget+'"':''} rel="noopener">
-        <div class="card-icon">${t.icon||"🔧"}</div>
+        <div class="card-icon">${renderIcon(t.icon||"tool")}</div>
         <div class="card-title">${esc(t.name)}</div>
         <div class="card-desc">${esc(t.desc||"")}</div>
         <div class="card-footer">
@@ -704,7 +716,7 @@ function openAddModal() {
   editingId=null;
   document.getElementById("modalToolTitle").textContent="新增工具";
   ["fName","fUrl","fDesc","fDownloadUrl"].forEach(id=>document.getElementById(id).value="");
-  selectedIcon="🔧"; pendingDownloadUrl="";
+  selectedIcon="tool"; pendingDownloadUrl="";
   buildCatSelect(); buildIconPicker();
   resetUploadArea(); switchDlTab("url");
   openModal("modalTool");
@@ -717,7 +729,7 @@ function editTool(id) {
   document.getElementById("fUrl").value=t.url||"";
   document.getElementById("fDesc").value=t.desc||"";
   document.getElementById("fDownloadUrl").value=t.downloadUrl||"";
-  selectedIcon=t.icon||"🔧";
+  selectedIcon=t.icon||"tool";
   pendingDownloadUrl=t.downloadUrl||"";
   buildCatSelect(t.category); buildIconPicker();
   resetUploadArea();
@@ -754,7 +766,7 @@ function buildCatSelect(selected) {
     '<option value="">請先新增分類</option>';
 }
 function buildIconPicker() {
-  document.getElementById("iconPicker").innerHTML = ICONS.map(ic=>`<div class="icon-opt${ic===selectedIcon?" selected":""}" onclick="pickIcon('${ic}')">${ic}</div>`).join("");
+  document.getElementById("iconPicker").innerHTML = ICONS.map(ic=>`<div class="icon-opt${ic===selectedIcon?" selected":""}" onclick="pickIcon('${ic}')" title="${ic}"><i class="ti ti-${ic}" aria-hidden="true"></i></div>`).join("");
 }
 function pickIcon(ic) { selectedIcon=ic; buildIconPicker(); }
 
