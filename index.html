@@ -409,7 +409,13 @@
 
     <div class="settings-section">
       <div class="settings-section-title">GitHub 上傳設定（用於上傳專案資料夾）</div>
-      <div class="field" style="margin-bottom:8px">
+      <!-- 共用 Token 說明（管理員已設定時顯示） -->
+      <div id="sharedTokenNote" class="info-box" style="display:none;background:#E8F5E9;border-color:#A5D6A7;color:#2E7D32;margin-bottom:8px">
+        ✅ 管理員已預設共用 Token，無需自行填寫，可直接使用上傳功能。
+      </div>
+
+      <!-- 個人 Token 輸入（共用 Token 未設定時顯示） -->
+      <div id="patInput" class="field" style="margin-bottom:8px">
         <label>Personal Access Token（PAT）</label>
         <div class="pat-input-wrap">
           <input type="password" id="fPat" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
@@ -417,12 +423,14 @@
             <svg id="patEyeIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           </button>
         </div>
-        <div class="pat-status none" id="patStatus">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          <span id="patStatusText">尚未設定</span>
-        </div>
       </div>
-      <div class="info-box">
+
+      <div class="pat-status none" id="patStatus">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="patStatusText">尚未設定</span>
+      </div>
+
+      <div id="patHowTo" class="info-box" style="margin-top:8px">
         <b>如何取得 PAT：</b><br>
         1. 前往 <a href="https://github.com/settings/tokens/new" target="_blank">GitHub → Settings → Tokens (classic)</a><br>
         2. 勾選 <code>repo</code> 權限<br>
@@ -493,6 +501,7 @@
 const ALLOWED_DOMAIN = 'eup.com.tw';
 const CLIENT_ID = '49182385706-hk1m4hqvlb224df35bbast88kk1baphq.apps.googleusercontent.com';
 const GH_REPO = 'homejay-eup/tool-hub';
+const SHARED_GH_TOKEN = ''; // ← 管理員在此填入共用 Token，同仁無需自行設定
 const ICONS = ["🔧","📄","📊","📝","🖼️","📋","📈","🗂️","🔍","⚙️","🚀","💡","🎯","📌","🔐","📧","🌐","🖥️","📱","🗃️","✅","📤","📥","🔗","🧮","📆","💬","🧩","📂","🖨️","🔔","📣"];
 
 const DEFAULT = {
@@ -525,19 +534,33 @@ function nextId() { return data.tools.length ? Math.max(...data.tools.map(t=>t.i
 function esc(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
 
 // ─── Settings (PAT) ─────────────────────────────────────────────
-function loadSettings() { try { return JSON.parse(localStorage.getItem("eup_settings")||"{}"); } catch(e){ return {}; } }
+function loadSettings() {
+  try {
+    const s = JSON.parse(localStorage.getItem("eup_settings") || "{}");
+    if (!s.githubToken && SHARED_GH_TOKEN) s.githubToken = SHARED_GH_TOKEN;
+    return s;
+  } catch(e) { return SHARED_GH_TOKEN ? {githubToken: SHARED_GH_TOKEN} : {}; }
+}
 function saveSettings(s) { localStorage.setItem("eup_settings", JSON.stringify(s)); }
+function _personalToken() { try { return JSON.parse(localStorage.getItem("eup_settings")||"{}").githubToken || ""; } catch(e){ return ""; } }
 
 function openSettings() {
-  const s = loadSettings();
-  document.getElementById("fPat").value = s.githubToken || "";
-  updatePatStatus(s.githubToken);
+  const personal = _personalToken();
+  document.getElementById("fPat").value = personal;
+  const usingShared = !personal && !!SHARED_GH_TOKEN;
+  document.getElementById("patInput").style.display = usingShared ? "none" : "";
+  document.getElementById("sharedTokenNote").style.display = usingShared ? "" : "none";
+  document.getElementById("patHowTo").style.display = usingShared ? "none" : "";
+  updatePatStatus(personal, usingShared);
   openModal("modalSettings");
 }
-function updatePatStatus(token) {
+function updatePatStatus(token, isShared) {
   const el = document.getElementById("patStatus");
   const txt = document.getElementById("patStatusText");
-  if (token && token.length > 10) {
+  if (isShared) {
+    el.className = "pat-status ok";
+    txt.textContent = "共用 Token 已設定（管理員預設）";
+  } else if (token && token.length > 10) {
     el.className = "pat-status ok";
     txt.textContent = "已設定 (" + token.slice(0,6) + "…" + token.slice(-4) + ")";
   } else {
