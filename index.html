@@ -769,19 +769,11 @@ function clearDownloadUrl() {
 }
 
 // ─── Exclude patterns ────────────────────────────────────────────
-const EXCLUDE_DIRS = new Set([
-  'node_modules','.git','.svn','.hg',
-  '__pycache__','venv','.venv','env','.env',
-  'dist','build','.next','.nuxt','out',
-  '.cache','.parcel-cache','.turbo',
-  'coverage','.nyc_output',
-  '.DS_Store','Thumbs.db',
-]);
-const EXCLUDE_EXTS = new Set([
-  '.pyc','.pyo','.class','.o','.obj',
-  '.exe','.dll','.so','.dylib',
-  '.log','.tmp','.temp','.swp',
-]);
+// Only auto-exclude: version control dirs + OS junk files
+const EXCLUDE_VCS_DIRS = new Set(['.git', '.svn', '.hg']);
+const EXCLUDE_OS_FILES = new Set(['.DS_Store', 'Thumbs.db', 'desktop.ini', '.Spotlight-V100', '.Trashes']);
+
+// Sensitive files: included in zip but shown as a warning
 const SENSITIVE_NAMES = new Set([
   '.env','.env.local','.env.production','.env.development',
   'secrets.json','credentials.json','service-account.json',
@@ -793,13 +785,16 @@ function filterFiles(allFiles) {
   for (const f of allFiles) {
     const parts = f.webkitRelativePath.split('/');
     const baseName = parts[parts.length - 1];
-    const ext = baseName.includes('.') ? '.' + baseName.split('.').pop().toLowerCase() : '';
 
-    // Check if any path segment is an excluded directory
-    const inExcludedDir = parts.slice(1, -1).some(seg => EXCLUDE_DIRS.has(seg));
-    if (inExcludedDir || EXCLUDE_DIRS.has(baseName)) { excluded.push(f); continue; }
-    if (EXCLUDE_EXTS.has(ext)) { excluded.push(f); continue; }
-    if (SENSITIVE_NAMES.has(baseName.toLowerCase())) { sensitive.push(f); continue; }
+    // Exclude VCS directories
+    const inVcsDir = parts.slice(1, -1).some(seg => EXCLUDE_VCS_DIRS.has(seg));
+    if (inVcsDir || EXCLUDE_VCS_DIRS.has(baseName)) { excluded.push(f); continue; }
+
+    // Exclude OS junk files
+    if (EXCLUDE_OS_FILES.has(baseName)) { excluded.push(f); continue; }
+
+    // Sensitive files: warn but still include
+    if (SENSITIVE_NAMES.has(baseName.toLowerCase())) { sensitive.push(f); }
     included.push(f);
   }
   return { included, excluded, sensitive };
@@ -848,7 +843,7 @@ function onFolderSelected(input) {
   const warnEl = document.getElementById("previewWarnings");
   if (sensitive.length) {
     warnEl.innerHTML = `<div class="preview-warn-box">
-      <b>⚠️ 偵測到可能含有機密的檔案，已自動排除：</b>
+      <b>⚠️ 注意：以下檔案可能含有機密，將一併打包，請確認是否要上傳：</b>
       ${sensitive.map(f => f.webkitRelativePath.split('/').slice(1).join('/')).map(n => `<code>${n}</code>`).join('、')}
     </div>`;
   } else {
