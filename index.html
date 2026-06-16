@@ -915,7 +915,7 @@ async function startUpload() {
     progressLabel.textContent = "壓縮中…"; progressBar.style.width = "15%";
     const zipBlob = await zipFolder(pendingFilteredFiles, pendingFolderName);
 
-    progressLabel.textContent = "建立 Release…"; progressBar.style.width = "40%";
+    progressLabel.textContent = "準備上傳…"; progressBar.style.width = "10%";
     const toolName = document.getElementById("fName").value.trim() || pendingFolderName;
     const downloadUrl = await uploadToGitHubRelease(toolName, pendingFolderName, zipBlob, settings.githubToken, (p) => {
       progressBar.style.width = (40 + p * 55) + "%";
@@ -950,40 +950,41 @@ async function zipFolder(files, folderName) {
 
 async function uploadToGitHubRelease(toolName, folderName, zipBlob, token, onProgress) {
   const headers = { 'Authorization': `token ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github+json' };
-  const tag = `project-${folderName.replace(/[^a-zA-Z0-9-_]/g,'_')}-${Date.now()}`;
-  const fileName = `${folderName}.zip`;
+  const safeName = folderName.replace(/[^a-zA-Z0-9一-鿿_-]/g, '_');
+  const fileName = `${safeName}_${Date.now()}.zip`;
+  const path = `releases/${fileName}`;
 
-  // 1. Create release
-  const relRes = await fetch(`https://api.github.com/repos/${GH_REPO}/releases`, {
-    method: 'POST', headers,
-    body: JSON.stringify({ tag_name: tag, name: `${toolName} 專案`, body: `由 EUP 工具入口自動上傳`, draft: false, prerelease: false })
+  // 1. Convert blob to base64
+  onProgress && onProgress(0.1);
+  const base64 = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(zipBlob);
   });
-  if (!relRes.ok) {
-    const err = await relRes.json().catch(()=>({}));
-    throw new Error(err.message || `建立 Release 失敗 (${relRes.status})`);
+  onProgress && onProgress(0.4);
+
+  // 2. Check if file exists (get sha for update)
+  let sha;
+  const checkRes = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${path}`, {
+    headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' }
+  });
+  if (checkRes.ok) { sha = (await checkRes.json()).sha; }
+  onProgress && onProgress(0.5);
+
+  // 3. Upload via Contents API (supports CORS)
+  const body = { message: `release: ${toolName}`, content: base64 };
+  if (sha) body.sha = sha;
+  const res = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${path}`, {
+    method: 'PUT', headers, body: JSON.stringify(body)
+  });
+  onProgress && onProgress(0.95);
+  if (!res.ok) {
+    const err = await res.json().catch(()=>({}));
+    throw new Error(err.message || `上傳失敗 (${res.status})`);
   }
-  const release = await relRes.json();
-  onProgress && onProgress(0.05);
-
-  // 2. Upload asset via XHR for progress
-  const uploadUrl = `https://uploads.github.com/repos/${GH_REPO}/releases/${release.id}/assets?name=${encodeURIComponent(fileName)}`;
-  return await new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', uploadUrl);
-    xhr.setRequestHeader('Authorization', `token ${token}`);
-    xhr.setRequestHeader('Content-Type', 'application/zip');
-    xhr.upload.onprogress = e => { if(e.lengthComputable) onProgress && onProgress(e.loaded/e.total); };
-    xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        const asset = JSON.parse(xhr.responseText);
-        resolve(asset.browser_download_url);
-      } else {
-        reject(new Error(`上傳失敗 (${xhr.status})`));
-      }
-    };
-    xhr.onerror = () => reject(new Error("網路錯誤"));
-    xhr.send(zipBlob);
-  });
+  onProgress && onProgress(1.0);
+  return `https://raw.githubusercontent.com/${GH_REPO}/main/${path}`;
 }
 
 // ─── Export / Import ─────────────────────────────────────────────
