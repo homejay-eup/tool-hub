@@ -509,6 +509,7 @@
 const ALLOWED_DOMAIN = 'eup.com.tw';
 const CLIENT_ID = '49182385706-hk1m4hqvlb224df35bbast88kk1baphq.apps.googleusercontent.com';
 const GH_REPO = 'homejay-eup/tool-hub';
+const GH_DATA_PATH = 'tools.json';
 const SHARED_GH_TOKEN = ''; // ← 管理員在此填入共用 Token，同仁無需自行設定
 const ICONS = [
   "tool","file-text","chart-bar","edit","photo","clipboard","chart-line","archive",
@@ -543,12 +544,60 @@ let editingId = null;
 let selectedIcon = "tool";
 let pendingDownloadUrl = ""; // temp during upload flow
 let dlTabMode = "url"; // 'url' | 'upload'
+let ghDataSha = null;
+let _saveQueue = Promise.resolve();
 
 function loadData() {
   try { const r=localStorage.getItem("eup_toolhub"); if(r) return JSON.parse(r); } catch(e){}
   return JSON.parse(JSON.stringify(DEFAULT));
 }
-function saveData() { localStorage.setItem("eup_toolhub", JSON.stringify(data)); }
+function saveData() {
+  localStorage.setItem("eup_toolhub", JSON.stringify(data));
+  _saveQueue = _saveQueue.then(() => _syncToGitHub()).catch(() => {});
+}
+function _b64Decode(str) {
+  return decodeURIComponent(atob(str.replace(/\n/g,'')).split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+}
+function _b64Encode(str) {
+  return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,(_,p)=>String.fromCharCode('0x'+p)));
+}
+async function _syncToGitHub() {
+  const settings = loadSettings();
+  if (!settings.githubToken) return;
+  const content = _b64Encode(JSON.stringify(data, null, 2));
+  const body = { message: 'data: update tools.json', content };
+  if (ghDataSha) body.sha = ghDataSha;
+  const res = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_DATA_PATH}`, {
+    method: 'PUT',
+    headers: { 'Authorization': `token ${settings.githubToken}`, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github+json' },
+    body: JSON.stringify(body)
+  });
+  if (res.ok) {
+    const json = await res.json();
+    ghDataSha = json.content.sha;
+  } else if (res.status === 409) {
+    toast("⚠️ 資料有衝突，正在重新同步…");
+    await syncFromGitHub();
+  } else {
+    const err = await res.json().catch(()=>({}));
+    toast("同步失敗：" + (err.message || res.status));
+  }
+}
+async function syncFromGitHub() {
+  const settings = loadSettings();
+  try {
+    const headers = { 'Accept': 'application/vnd.github+json' };
+    if (settings.githubToken) headers['Authorization'] = `token ${settings.githubToken}`;
+    const res = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_DATA_PATH}`, { headers });
+    if (res.ok) {
+      const json = await res.json();
+      ghDataSha = json.sha;
+      data = JSON.parse(_b64Decode(json.content));
+      localStorage.setItem("eup_toolhub", JSON.stringify(data));
+      render();
+    }
+  } catch(e) { /* offline, use cached */ }
+}
 function nextId() { return data.tools.length ? Math.max(...data.tools.map(t=>t.id))+1 : 1; }
 function esc(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
 
@@ -629,6 +678,7 @@ function showApp(user) {
     fallback.parentNode.insertBefore(img, fallback); fallback.remove();
   } else { fallback.textContent=(user.name||'U')[0].toUpperCase(); }
   render();
+  syncFromGitHub(); // 登入後從 GitHub 取得最新共用資料
 }
 function logout() {
   sessionStorage.removeItem('eup_user');
