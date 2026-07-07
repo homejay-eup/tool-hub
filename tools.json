@@ -1,0 +1,83 @@
+{
+  "categories": [
+    "全部",
+    "文件處理",
+    "資料分析",
+    "行政作業",
+    "其他"
+  ],
+  "tools": [
+    {
+      "id": 13,
+      "name": "設備料卡管理系統",
+      "url": "https://equipment-cards.vercel.app/",
+      "desc": "料卡各式內容資訊",
+      "category": "其他",
+      "icon": "tool",
+      "downloadUrl": ""
+    },
+    {
+      "id": 12,
+      "name": "土石方合格證助手",
+      "url": "",
+      "desc": "自動登錄國土署->下載匯出檔->產出已核可清單->下載合格證->列印合格證->自動紀錄表單",
+      "category": "文件處理",
+      "icon": "tool",
+      "downloadUrl": "https://raw.githubusercontent.com/homejay-eup/tool-hub/main/releases/土石方合格證助手_發布版_1781578391479.zip"
+    },
+    {
+      "id": 7,
+      "name": "客代地址標籤列印",
+      "url": "https://docs.google.com/spreadsheets/d/1oDgguWakaouFMhBkQUL0Z9SwWLJdI_Vor_PF9CHt4IY/edit?gid=1410552315#gid=1410552315",
+      "desc": "每天自動抓\"昨天\"CRM的客代地址",
+      "category": "文件處理",
+      "icon": "database",
+      "downloadUrl": ""
+    },
+    {
+      "id": 14,
+      "name": "出貨平台_資料庫(明細)",
+      "url": "https://docs.google.com/spreadsheets/d/1jun1QwbmMbs-UvCDULMN4dtjdvWPStlu540QFu6Hhcg/edit?gid=0#gid=0",
+      "desc": "",
+      "category": "文件處理",
+      "icon": "database",
+      "downloadUrl": ""
+    },
+    {
+      "id": 8,
+      "name": "出貨平台_資料庫 (碳排ESG)",
+      "url": "https://docs.google.com/spreadsheets/d/1blP-2fa6L42tRvgLiRP5pDVSJp-hkxsKKrWiN2uUMvM/edit?gid=0#gid=0",
+      "desc": "自動抓\"昨天\"CRM的出貨平台資料",
+      "category": "文件處理",
+      "icon": "database",
+      "downloadUrl": ""
+    },
+    {
+      "id": 9,
+      "name": "品質分析圖表",
+      "url": "https://homejay-eup.github.io/quality-dashboard/quality-dashboard.html",
+      "desc": "指定設備廠商品質分析 (尚未完善)",
+      "category": "資料分析",
+      "icon": "chart-bar",
+      "downloadUrl": ""
+    },
+    {
+      "id": 10,
+      "name": "數量統計圖表",
+      "url": "https://homejay-eup.github.io/quantity-dashboard/",
+      "desc": "各項作業類型統計",
+      "category": "文件處理",
+      "icon": "chart-bar",
+      "downloadUrl": ""
+    },
+    {
+      "id": 11,
+      "name": "數量上傳工具",
+      "url": "https://homejay-eup.github.io/quantity-dashboard/upload_tool.html",
+      "desc": "各作業類型資料上傳",
+      "category": "文件處理",
+      "icon": "settings",
+      "downloadUrl": ""
+    }
+  ]
+}
