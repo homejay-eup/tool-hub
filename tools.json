@@ -78,6 +78,15 @@
       "category": "文件處理",
       "icon": "settings",
       "downloadUrl": ""
+    },
+    {
+      "id": 15,
+      "name": "各區持有過久設備追蹤表 (每季)",
+      "url": "https://docs.google.com/spreadsheets/d/1omU6qhuHB86cw7uYgeU4y6nMv1MHnHMLmLXJLXYjsrk/edit?gid=981910424#gid=981910424",
+      "desc": "於每季盤點後執行",
+      "category": "文件處理",
+      "icon": "file-text",
+      "downloadUrl": ""
     }
   ]
 }
