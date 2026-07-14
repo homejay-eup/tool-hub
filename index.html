@@ -561,9 +561,21 @@ function _b64Decode(str) {
 function _b64Encode(str) {
   return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,(_,p)=>String.fromCharCode('0x'+p)));
 }
+async function _fetchGhSha() {
+  const settings = loadSettings();
+  if (!settings.githubToken) return null;
+  const res = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_DATA_PATH}`, {
+    headers: { 'Authorization': `token ${settings.githubToken}`, 'Accept': 'application/vnd.github+json' }
+  });
+  if (!res.ok) return null;
+  const json = await res.json();
+  return json.sha;
+}
 async function _syncToGitHub() {
   const settings = loadSettings();
   if (!settings.githubToken) return;
+  // 寫入前先取最新 sha（走已驗證的 API，走 token 專屬額度，不受共用 IP 的未驗證額度限制）
+  ghDataSha = await _fetchGhSha();
   const content = _b64Encode(JSON.stringify(data, null, 2));
   const body = { message: 'data: update tools.json', content };
   if (ghDataSha) body.sha = ghDataSha;
@@ -584,19 +596,17 @@ async function _syncToGitHub() {
   }
 }
 async function syncFromGitHub() {
-  const settings = loadSettings();
+  // 讀取改走 raw.githubusercontent.com（CDN，無 60次/小時的未驗證 API 額度限制），避免多人共用辦公室 IP 時互相卡到額度
   try {
-    const headers = { 'Accept': 'application/vnd.github+json' };
-    if (settings.githubToken) headers['Authorization'] = `token ${settings.githubToken}`;
-    const res = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_DATA_PATH}`, { headers });
+    const res = await fetch(`https://raw.githubusercontent.com/${GH_REPO}/main/${GH_DATA_PATH}?t=${Date.now()}`, { cache: 'no-store' });
     if (res.ok) {
-      const json = await res.json();
-      ghDataSha = json.sha;
-      data = JSON.parse(_b64Decode(json.content));
+      data = await res.json();
       localStorage.setItem("eup_toolhub", JSON.stringify(data));
       render();
+    } else {
+      toast("⚠️ 同步失敗，目前顯示本機快取資料");
     }
-  } catch(e) { /* offline, use cached */ }
+  } catch(e) { toast("⚠️ 同步失敗，目前顯示本機快取資料"); }
 }
 function nextId() { return data.tools.length ? Math.max(...data.tools.map(t=>t.id))+1 : 1; }
 function esc(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
