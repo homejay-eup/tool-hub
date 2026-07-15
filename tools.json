@@ -87,6 +87,15 @@
       "category": "文件處理",
       "icon": "file-text",
       "downloadUrl": ""
+    },
+    {
+      "id": 16,
+      "name": "品質分析來源(CRM)",
+      "url": "https://docs.google.com/spreadsheets/d/1DDvmuNley9safgUGMfolTZph6TkiLdC2h99nAiKG_j4/edit?gid=0#gid=0",
+      "desc": "品質分析報告來源CRM，更新資料庫要呼叫Tom",
+      "category": "文件處理",
+      "icon": "tool",
+      "downloadUrl": ""
     }
   ]
 }
