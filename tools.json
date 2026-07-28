@@ -54,7 +54,7 @@
     },
     {
       "id": 9,
-      "name": "品質分析圖表",
+      "name": "品質分析圖表(舊版)",
       "url": "https://homejay-eup.github.io/quality-dashboard/quality-dashboard.html",
       "desc": "指定設備廠商品質分析 (尚未完善)",
       "category": "資料分析",
