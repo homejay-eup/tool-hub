@@ -96,6 +96,15 @@
       "category": "文件處理",
       "icon": "tool",
       "downloadUrl": ""
+    },
+    {
+      "id": 17,
+      "name": "設備品質分析工具",
+      "url": "https://homejay-eup.github.io/quality-dashboard-v2/",
+      "desc": "根據CRM的資料，透過篩選工具，一鍵產生落地頁報告",
+      "category": "文件處理",
+      "icon": "tool",
+      "downloadUrl": ""
     }
   ]
 }
