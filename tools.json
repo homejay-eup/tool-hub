@@ -105,6 +105,15 @@
       "category": "文件處理",
       "icon": "tool",
       "downloadUrl": ""
+    },
+    {
+      "id": 18,
+      "name": "設備品質分析工具來源(CRM)-進貨日",
+      "url": "https://docs.google.com/spreadsheets/d/1_YtwRVcyc9ShfZurlfDF71i76tgUClCoENh7QUtX_oo/edit?gid=495145232#gid=495145232",
+      "desc": "",
+      "category": "文件處理",
+      "icon": "tool",
+      "downloadUrl": ""
     }
   ]
 }
