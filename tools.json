@@ -114,6 +114,15 @@
       "category": "文件處理",
       "icon": "tool",
       "downloadUrl": ""
+    },
+    {
+      "id": 19,
+      "name": "組員休假紀錄月曆",
+      "url": "https://dreamy-beignet-afa268.netlify.app/",
+      "desc": "不是請假系統，僅取代月曆讓大家看到更及時的戰況。\n請假原則：一天一週前；兩天兩週前；一天一人，其餘是特殊狀況另行討論",
+      "category": "行政作業",
+      "icon": "clipboard",
+      "downloadUrl": ""
     }
   ]
 }
