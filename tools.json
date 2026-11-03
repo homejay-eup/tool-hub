@@ -123,6 +123,15 @@
       "category": "行政作業",
       "icon": "clipboard",
       "downloadUrl": ""
+    },
+    {
+      "id": 20,
+      "name": "每日數據填寫",
+      "url": "https://script.google.com/a/macros/eup.com.tw/s/AKfycbxjvOPKg9xVHZ0PG_lWE6r-3J_0QeLWhw36SlUHO78Y5NcBw_kplbUhc8qXJl3ZFwq2/exec",
+      "desc": "",
+      "category": "文件處理",
+      "icon": "edit",
+      "downloadUrl": ""
     }
   ]
 }
