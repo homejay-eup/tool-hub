@@ -72,7 +72,7 @@
     },
     {
       "id": 11,
-      "name": "數量上傳工具",
+      "name": "數量上傳工具 (棄用)",
       "url": "https://homejay-eup.github.io/quantity-dashboard/upload_tool.html",
       "desc": "各作業類型資料上傳",
       "category": "文件處理",
