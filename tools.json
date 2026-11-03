@@ -63,7 +63,7 @@
     },
     {
       "id": 10,
-      "name": "數量統計圖表",
+      "name": "數量統計圖表 (棄用)",
       "url": "https://homejay-eup.github.io/quantity-dashboard/",
       "desc": "各項作業類型統計",
       "category": "文件處理",
