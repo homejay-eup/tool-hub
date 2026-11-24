@@ -141,6 +141,15 @@
       "category": "文件處理",
       "icon": "file-text",
       "downloadUrl": ""
+    },
+    {
+      "id": 22,
+      "name": "長輝庫存管理",
+      "url": "https://script.google.com/a/macros/eup.com.tw/s/AKfycbxUtAWJEfilY5sjG6AAqP7WWgmOgwgKE_J9cTncRpcxedeI29Stw2QJlh2hdxYw4xg/exec",
+      "desc": "讓長輝自己看庫存，自己判斷是否補數量",
+      "category": "文件處理",
+      "icon": "tool",
+      "downloadUrl": ""
     }
   ]
 }
